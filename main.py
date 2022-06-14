@@ -42,4 +42,14 @@ def get_games(game_ids, bgg):
     games = pd.DataFrame(games_info).T
     games["url"] = "https://boardgamegeek.com/boardgame/" + games["id"].astype("str")
     games["average_rating"] = games["stats"].apply(lambda x: x["average"])
+    games["short_name"] = games["name"].apply(shorten_name)
     return games
+
+
+def shorten_name(name):
+    short_name = name
+    if ":" in short_name:
+        short_name = short_name.split(":")[0]
+    if len(short_name) > 20:
+        short_name = "".join([word[0] for word in short_name.split()])
+    return short_name

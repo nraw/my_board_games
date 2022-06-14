@@ -12,7 +12,9 @@ def make_charts(suggested_players):
         .mark_bar()
         .encode(
             x=alt.X("players:O", axis=alt.Axis(orient="top", labelAngle=0)),
-            y=alt.Y("count(id)", scale=alt.Scale(reverse=True), axis=None),
+            y=alt.Y(
+                "count(id)", stack="zero", scale=alt.Scale(reverse=True), axis=None
+            ),
             order=alt.Order("playingtime", sort="descending"),
             color=alt.condition(
                 selection, "average_rating", alt.value("lightgray"), legend=None
@@ -20,6 +22,23 @@ def make_charts(suggested_players):
             tooltip=["name", "playingtime", "average_rating"],
         )
     )
+    fig2 = (
+        alt.Chart(suggested_players)
+        .mark_text(align="center", baseline="middle", dy=-10)
+        .encode(
+            x=alt.X("players:O", axis=alt.Axis(orient="top", labelAngle=0)),
+            y=alt.Y(
+                "count(id)", stack="zero", scale=alt.Scale(reverse=True), axis=None
+            ),
+            order=alt.Order("playingtime", sort="descending"),
+            color=alt.condition(
+                alt.datum.average_rating > 7.5, alt.value("white"), alt.value("black")
+            ),
+            detail="average_rating",
+            text="short_name",
+        )
+    )
+    fig = fig + fig2
     #  fig = alt.vconcat(fig1, fig2)
     fig = fig.add_selection(selection)
     fig = fig.properties(width="container", height="container").configure_view(
