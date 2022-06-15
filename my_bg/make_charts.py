@@ -20,6 +20,7 @@ def make_charts(suggested_players):
                 selection, "average_rating", alt.value("lightgray"), legend=None
             ),
             tooltip=["name", "playingtime", "average_rating"],
+            href="url",
         )
     )
     fig2 = (

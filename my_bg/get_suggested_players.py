@@ -25,4 +25,18 @@ def get_suggested_players(games):
         games, on=["id", "name"], validate="m:1"
     )
     suggested_players = suggested_players.sort_values("average_rating", ascending=False)
+    extra_rows = create_extra_rows(suggested_players)
+    suggested_players = pd.concat([suggested_players, extra_rows])
     return suggested_players
+
+
+def create_extra_rows(suggested_players):
+    extra_rows = pd.DataFrame(
+        suggested_players["playingtime"].drop_duplicates().sort_values(ascending=False)
+    )
+    extra_rows["id"] = extra_rows["playingtime"]
+    extra_rows["name"] = extra_rows["playingtime"].astype("str") + " minutes"
+    extra_rows["players"] = 0
+    extra_rows["average_rating"] = 0
+    extra_rows["short_name"] = extra_rows["name"]
+    return extra_rows
