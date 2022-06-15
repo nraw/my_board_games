@@ -37,6 +37,6 @@ def create_extra_rows(suggested_players):
     extra_rows["id"] = extra_rows["playingtime"]
     extra_rows["name"] = extra_rows["playingtime"].astype("str") + " minutes"
     extra_rows["players"] = 0
-    extra_rows["average_rating"] = 0
+    extra_rows["average_rating"] = suggested_players["average_rating"].min()
     extra_rows["short_name"] = extra_rows["name"]
     return extra_rows
