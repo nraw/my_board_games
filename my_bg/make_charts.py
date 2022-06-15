@@ -19,7 +19,7 @@ def make_charts(suggested_players):
             color=alt.condition(
                 selection, "average_rating", alt.value("lightgray"), legend=None
             ),
-            tooltip=["name", "playingtime", "average_rating"],
+            tooltip=["name", "playingtime", "average_rating", "description"],
             href="url",
         )
     )
