@@ -3,6 +3,7 @@ import json
 import pandas as pd
 from boardgamegeek import BGGClient
 from loguru import logger
+from retry import retry
 
 #  from my_bg.get_bbb_games import get_bbb_games
 from my_bg.get_suggested_players import get_suggested_players
@@ -30,12 +31,20 @@ def main():
 
 def get_my_games(bgg) -> pd.DataFrame:
     exclude_list = conf["exclude_list"]
-    games_batch = bgg.collection("nraw", own=True, exclude_subtype="boardgameexpansion")
+    games_batch = get_collection(
+        bgg, user_name="nraw", own=True, exclude_subtype="boardgameexpansion"
+    )
     games_info = {game.id: game._data for game in games_batch if "id" in dir(game)}
     my_games = pd.DataFrame(games_info).T
     my_games = my_games[my_games.own == "1"]
     my_games = my_games[~my_games.id.isin(exclude_list)]
     return my_games
+
+
+@retry(tries=10, delay=3, backoff=2)
+def get_collection(bgg, **kwargs):
+    collection = bgg.collection(**kwargs)
+    return collection
 
 
 def get_games(game_ids, bgg):
