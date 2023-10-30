@@ -2,13 +2,14 @@ import altair as alt
 
 
 def make_charts(suggested_players):
+    suggested_players_limited = suggested_players[suggested_players.players <= 8]
 
     # https://github.com/altair-viz/altair/issues/963
     selection = alt.selection_single(
         fields=["playingtime"], on="mouseover"  # , nearest=True
     )
     fig = (
-        alt.Chart(suggested_players)
+        alt.Chart(suggested_players_limited)
         .mark_bar()
         .encode(
             x=alt.X("players:O", axis=alt.Axis(orient="top", labelAngle=0)),
@@ -24,7 +25,7 @@ def make_charts(suggested_players):
         )
     )
     fig2 = (
-        alt.Chart(suggested_players)
+        alt.Chart(suggested_players_limited)
         .mark_text(align="center", baseline="middle", dy=-10)
         .encode(
             x=alt.X("players:O", axis=alt.Axis(orient="top", labelAngle=0)),
