@@ -24,7 +24,13 @@ def make_time_since_last_played_chart(suggested_players):
     suggested_players_limited["time_since_last_played"] = suggested_players_limited[
         "time_since_last_played"
     ].fillna("Never")
+    suggested_players_limited["days_since_last_played"] = suggested_players_limited[
+        "days_since_last_played"
+    ].fillna(9000)
     labels = time_since_labels + ["Never"]
+    suggested_players_limited.sort_values(
+        by=["time_since_last_played", "playingtime"], inplace=True
+    )
 
     # https://github.com/altair-viz/altair/issues/963
     selection = alt.selection_single(
@@ -38,7 +44,7 @@ def make_time_since_last_played_chart(suggested_players):
             y=alt.Y(
                 "count(id)", stack="zero", scale=alt.Scale(reverse=True), axis=None
             ),
-            order=alt.Order("playingtime", sort="descending"),
+            order=alt.Order("days_since_last_played:Q", sort="descending"),
             #  color="days_since_last_played:Q",
             color=alt.condition(
                 selection,
@@ -64,13 +70,13 @@ def make_time_since_last_played_chart(suggested_players):
             y=alt.Y(
                 "count(id)", stack="zero", scale=alt.Scale(reverse=True), axis=None
             ),
-            order=alt.Order("playingtime", sort="descending"),
+            order=alt.Order("days_since_last_played:Q", sort="descending"),
             color=alt.condition(
                 alt.datum.time_since_last_played == labels[-1],
                 alt.value("white"),
                 alt.value("black"),
             ),
-            detail="time_since_last_played",
+            detail=["time_since_last_played", "days_since_last_played"],
             text="short_name",
         )
     )
