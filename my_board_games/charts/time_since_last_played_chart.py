@@ -7,7 +7,7 @@ def make_time_since_last_played_chart(suggested_players):
     suggested_players_limited = suggested_players_limited[
         suggested_players_limited.players > 0
     ].copy()
-    time_since_bins = [0, 30, 90, 180, 365, 730, 1000]
+    time_since_bins = [-1, 30, 90, 180, 365, 730, 1000]
     time_since_labels = [
         "In the last month",
         "In the last 3 months",
