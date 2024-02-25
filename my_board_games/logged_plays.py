@@ -2,7 +2,8 @@ import xml.etree.ElementTree as ET
 
 import pandas as pd
 import requests
-from my_bg.settings import conf
+
+from my_board_games.settings import conf
 
 
 def get_logged_plays():
