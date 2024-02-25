@@ -1,7 +1,7 @@
 import altair as alt
 
 
-def make_charts(suggested_players):
+def make_average_rating_chart(suggested_players):
     suggested_players_limited = suggested_players[suggested_players.players <= 8]
 
     # https://github.com/altair-viz/altair/issues/963
@@ -18,7 +18,7 @@ def make_charts(suggested_players):
             ),
             order=alt.Order("playingtime", sort="descending"),
             color=alt.condition(
-                selection, "average_rating", alt.value("lightgray"), legend=None
+                selection, "average_rating:Q", alt.value("lightgray"), legend=None
             ),
             tooltip=["name", "playingtime", "average_rating", "description"],
             href="url",
@@ -43,8 +43,4 @@ def make_charts(suggested_players):
     fig = fig + fig2
     #  fig = alt.vconcat(fig1, fig2)
     fig = fig.add_selection(selection)
-    fig = fig.properties(width="container", height="container").configure_view(
-        strokeWidth=0
-    )
-    fig.save("index2.html", embed_options={"actions": False})
     return fig
