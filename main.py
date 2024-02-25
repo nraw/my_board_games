@@ -5,10 +5,11 @@ from boardgamegeek import BGGClient
 from loguru import logger
 from retry import retry
 
-#  from my_bg.get_bbb_games import get_bbb_games
-from my_bg.get_suggested_players import get_suggested_players
-from my_bg.make_charts import make_charts
-from my_bg.settings import conf
+#  from my_board_games.get_bbb_games import get_bbb_games
+from my_board_games.get_suggested_players import get_suggested_players
+from my_board_games.logged_plays import add_logged_plays, get_logged_plays
+from my_board_games.make_charts import make_charts
+from my_board_games.settings import conf
 
 
 def main():
@@ -20,6 +21,8 @@ def main():
     game_ids = my_games.id.to_list()
     logger.info("Getting games metadata")
     games = get_games(game_ids, bgg)
+    logged_plays = get_logged_plays()
+    games = add_logged_plays(games, logged_plays)
     logger.info("Got games metadata")
     logger.info("Getting suggested players table")
     suggested_players = get_suggested_players(games)
@@ -31,8 +34,9 @@ def main():
 
 def get_my_games(bgg) -> pd.DataFrame:
     exclude_list = conf["exclude_list"]
+    user_name = conf["user_name"]
     games_batch = get_collection(
-        bgg, user_name="nraw", own=True, exclude_subtype="boardgameexpansion"
+        bgg, user_name=user_name, own=True, exclude_subtype="boardgameexpansion"
     )
     games_info = {game.id: game._data for game in games_batch if "id" in dir(game)}
     my_games = pd.DataFrame(games_info).T
