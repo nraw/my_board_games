@@ -38,6 +38,7 @@ def get_logged_plays():
 
     # Create a Pandas DataFrame from the plays data
     logged_plays = pd.DataFrame(plays_list)
+    logged_plays['game_name'] = logged_plays['game_name'].apply(map_duplicates)
     return logged_plays
 
 
@@ -55,3 +56,9 @@ def get_days_since_last_played(games):
         pd.to_datetime("today") - games["last_played"]
     ).dt.days
     return games
+
+def map_duplicates(name):
+    mapping = conf["mapping"]
+    if name in mapping:
+        name = mapping[name]
+    return name
