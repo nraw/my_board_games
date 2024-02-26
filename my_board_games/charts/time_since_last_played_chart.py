@@ -1,9 +1,14 @@
 import altair as alt
 import pandas as pd
 
+from my_board_games.settings import conf
+
 
 def make_time_since_last_played_chart(suggested_players):
     suggested_players_limited = suggested_players[suggested_players.players <= 8]
+    suggested_players_limited = suggested_players_limited[
+        ~suggested_players_limited.name.isin(conf["mapping"].keys())
+    ]
     suggested_players_limited = suggested_players_limited[
         suggested_players_limited.players > 0
     ].copy()
