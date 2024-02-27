@@ -37,7 +37,7 @@ def make_average_rating_chart(suggested_players):
                 alt.datum.average_rating > 7.5, alt.value("white"), alt.value("black")
             ),
             detail="average_rating",
-            text="short_name",
+            text="cool_name",
         )
     )
     fig = fig + fig2
