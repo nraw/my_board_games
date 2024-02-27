@@ -82,7 +82,7 @@ def make_time_since_last_played_chart(suggested_players):
                 alt.value("black"),
             ),
             detail=["time_since_last_played", "days_since_last_played"],
-            text="short_name",
+            text="cool_name",
         )
     )
     fig = fig + fig2
