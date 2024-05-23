@@ -8,3 +8,4 @@ requests-cache==0.5.2
 requests==2.25.1
 tqdm==4.64.0
 retry
+xmltodict

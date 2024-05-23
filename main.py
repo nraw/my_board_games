@@ -1,11 +1,10 @@
-import json
-
 import pandas as pd
 from boardgamegeek import BGGClient
 from loguru import logger
 from retry import retry
 
 #  from my_board_games.get_bbb_games import get_bbb_games
+from my_board_games.get_ratings import add_ratings, get_personal_ratings
 from my_board_games.get_suggested_players import get_suggested_players
 from my_board_games.logged_plays import add_logged_plays, get_logged_plays
 from my_board_games.make_charts import make_charts
@@ -21,15 +20,21 @@ def main():
     game_ids = my_games.id.to_list()
     logger.info("Getting games metadata")
     games = get_games(game_ids, bgg)
+    logger.info("Got games metadata")
+    logger.info("Getting logged plays")
     logged_plays = get_logged_plays()
     games = add_logged_plays(games, logged_plays)
-    logger.info("Got games metadata")
+    logger.info("Added logged plays to metadata")
+    logger.info("Getting ratings")
+    ratings = get_personal_ratings()
+    games = add_ratings(games, ratings)
+    logger.info("Added ratings to metadata")
     logger.info("Getting suggested players table")
     suggested_players = get_suggested_players(games)
     logger.info("Got suggested players table")
-    logger.info("Charting")
-    make_charts(suggested_players)
-    logger.info("Charted")
+    #  logger.info("Charting")
+    #  make_charts(suggested_players)
+    #  logger.info("Charted")
 
 
 def get_my_games(bgg) -> pd.DataFrame:
