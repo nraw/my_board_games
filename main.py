@@ -63,6 +63,7 @@ def get_games(game_ids, bgg):
     games["url"] = "https://boardgamegeek.com/boardgame/" + games["id"].astype("str")
     games["average_rating"] = games["stats"].apply(lambda x: x["average"])
     games["short_name"] = games["name"].apply(shorten_name)
+    games = filter_quasi_expansions(games)
     return games
 
 
@@ -73,6 +74,11 @@ def shorten_name(name):
     if len(short_name) > 20:
         short_name = "".join([word[0] for word in short_name.split()])
     return short_name
+
+
+def filter_quasi_expansions(games):
+    games = games[~games.name.isin(conf["mapping"].keys())]
+    return games
 
 
 if __name__ == "__main__":
