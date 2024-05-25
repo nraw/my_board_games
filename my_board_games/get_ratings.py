@@ -1,10 +1,13 @@
 import pandas as pd
 import requests
 import xmltodict
+from loguru import logger
+from retry import retry
 
 from my_board_games.settings import conf
 
 
+@retry(tries=10, delay=3, backoff=2)
 def get_personal_ratings():
     username = conf["user_name"]
     ratings = []
@@ -27,7 +30,9 @@ def get_personal_ratings():
                         "numplays": numplays,
                     }
                 )
-
+    if len(ratings) == 0:
+        logger.error("No ratings found")
+        raise ValueError("No ratings found")
     return ratings
 
 
