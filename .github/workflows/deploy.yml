@@ -65,6 +65,8 @@ jobs:
         run: |
           cd 11ty_site
           npm install @11ty/eleventy --save-dev
+          npm install -D tailwindcss
+          npx tailwindcss -i ./static/input.css -o ./_site/style.css
           npx @11ty/eleventy
 
       - name: Upload Page Artifact 🚀
