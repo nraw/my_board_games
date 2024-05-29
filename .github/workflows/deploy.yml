@@ -71,6 +71,8 @@ jobs:
           npm install -D tailwindcss
           npx tailwindcss -i ./static/input.css -o ./_site/style.css
           npx @11ty/eleventy
+          cp _site/f/all/s/days-since-last-played _site/index.html
+
 
       - name: Upload Page Artifact 🚀
         uses: actions/upload-pages-artifact@v2
