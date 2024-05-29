@@ -12,7 +12,7 @@ pagination:
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title></title>
-	<link href="/style.css" rel="stylesheet" />
+	<link href="style.css" rel="stylesheet" />
 </head>
 
 <body class="dark:bg-slate-800 dark:text-white">
@@ -38,29 +38,29 @@ pagination:
 							<div class='flex'>
 								<div class='flex items-center'>
 									{% if filter.filter == "short" %}
-										<a href="/f/not-short/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-blue-500 px-2 py-1 mx-1 text-sm">
+										<a href="f/not-short/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-blue-500 px-2 py-1 mx-1 text-sm">
 										<i data-lucide="rabbit" class='w-3 m-0'></i>
 									</a>
 									{% elsif filter.filter == "not-short" %}
-									<a href="/f/all/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-red-500 px-2 py-1 mx-1 text-sm">
+									<a href="f/all/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-red-500 px-2 py-1 mx-1 text-sm">
 										<i data-lucide="rabbit" class='w-3 m-0'></i>
 									</a>
 									{% else %}
-									<a href="/f/short/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="px-2 py-1 mx-1 text-sm">
+									<a href="f/short/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="px-2 py-1 mx-1 text-sm">
 										<i data-lucide="rabbit" class='w-3 m-0'></i>
 									</a>
 									{% endif %}
 									/
 									{% if filter.filter == "long" %}
-									<a href="/f/not-long/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-blue-500 px-2 py-1 mx-1 text-sm">
+									<a href="f/not-long/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-blue-500 px-2 py-1 mx-1 text-sm">
 										<i data-lucide="snail" class='w-3 m-0'></i>
 									</a>
 									{% elsif filter.filter == "not-long" %}
-									<a href="/f/all/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-red-500 px-2 py-1 mx-1 text-sm">
+									<a href="f/all/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-red-500 px-2 py-1 mx-1 text-sm">
 										<i data-lucide="snail" class='w-3 m-0'></i>
 									</a>
 									{% else %}
-									<a href="/f/long/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="px-2 py-1 mx-1 text-sm">
+									<a href="f/long/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="px-2 py-1 mx-1 text-sm">
 										<i data-lucide="snail" class='w-3 m-0'></i>
 									</a>
 									{% endif %}
@@ -68,29 +68,29 @@ pagination:
 
 								<div class='flex items-center'>
 									{% if filter.filter == "light" %}
-									<a href="/f/not-light/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-blue-500 px-2 py-1 mx-1 text-sm">
+									<a href="f/not-light/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-blue-500 px-2 py-1 mx-1 text-sm">
 										<i data-lucide="feather" class='w-3 m-0'></i>
 									</a>
 								{% elsif filter.filter == "not-light" %}
-									<a href="/f/all/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-red-500 px-2 py-1 mx-1 text-sm">
+									<a href="f/all/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-red-500 px-2 py-1 mx-1 text-sm">
 										<i data-lucide="feather" class='w-3 m-0'></i>
 									</a>
 									{% else %}
-									<a href="/f/light/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="px-2 py-1 mx-1 text-sm">
+									<a href="f/light/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="px-2 py-1 mx-1 text-sm">
 										<i data-lucide="feather" class='w-3 m-0'></i>
 									</a>
 									{% endif %}
 									/
 									{% if filter.filter == "heavy" %}
-									<a href="/f/not-heavy/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-blue-500 px-2 py-1 mx-1 text-sm">
+									<a href="f/not-heavy/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-blue-500 px-2 py-1 mx-1 text-sm">
 										<i data-lucide="dumbbell" class='w-3 m-0'></i>
 									</a>
 								{% elsif filter.filter == "not-heavy" %}
-									<a href="/f/all/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-red-500 px-2 py-1 mx-1 text-sm">
+									<a href="f/all/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-red-500 px-2 py-1 mx-1 text-sm">
 										<i data-lucide="dumbbell" class='w-3 m-0'></i>
 									</a>
 									{% else %}
-									<a href="/f/heavy/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="px-2 py-1 mx-1 text-sm">
+									<a href="f/heavy/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="px-2 py-1 mx-1 text-sm">
 										<i data-lucide="dumbbell" class='w-3 m-0'></i>
 
 									</a>
