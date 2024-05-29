@@ -7,7 +7,7 @@ from retry import retry
 from my_board_games.settings import conf
 
 
-@retry(tries=10, delay=3, backoff=2)
+@retry(tries=10, delay=3, backoff=2, logger=logger)
 def get_personal_ratings():
     username = conf["user_name"]
     ratings = []
@@ -21,7 +21,7 @@ def get_personal_ratings():
             #  game_name = item["name"]["#text"]
             game_id = int(item["@objectid"])
             rating = item.get("stats", {}).get("rating", None).get("@value", None)
-            numplays = item.get("numplays", "0")
+            numplays = int(item.get("numplays", "0"))
             if rating is not None:
                 ratings.append(
                     {

@@ -21,6 +21,9 @@ jobs:
           npm install @11ty/eleventy --save-dev
           npx @11ty/eleventy
 
+      - name: Weird index.html
+        run: cp _site/f/all/s/days-since-last-played _site/index.html
+
       - name: Deploy 🚀
         uses: peaceiris/actions-gh-pages@v3.7.3
         with:

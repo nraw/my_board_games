@@ -1,0 +1,146 @@
+[
+	{
+		"filter": "short",
+		"sort": "days_since_last_played"
+	},
+	{
+		"filter": "short",
+		"sort": "numplays"
+	},
+	{
+		"filter": "short",
+		"sort": "averageweight"
+	},
+	{
+		"filter": "short",
+		"sort": "playingtime"
+	},
+	{
+		"filter": "not-short",
+		"sort": "days_since_last_played"
+	},
+	{
+		"filter": "not-short",
+		"sort": "numplays"
+	},
+	{
+		"filter": "not-short",
+		"sort": "averageweight"
+	},
+	{
+		"filter": "not-short",
+		"sort": "playingtime"
+	},
+	{
+		"filter": "all",
+		"sort": "days_since_last_played"
+	},
+	{
+		"filter": "all",
+		"sort": "numplays"
+	},
+	{
+		"filter": "all",
+		"sort": "averageweight"
+	},
+	{
+		"filter": "all",
+		"sort": "playingtime"
+	},
+	{
+		"filter": "long",
+		"sort": "days_since_last_played"
+	},
+	{
+		"filter": "long",
+		"sort": "numplays"
+	},
+	{
+		"filter": "long",
+		"sort": "averageweight"
+	},
+	{
+		"filter": "long",
+		"sort": "playingtime"
+	},
+	{
+		"filter": "not-long",
+		"sort": "days_since_last_played"
+	},
+	{
+		"filter": "not-long",
+		"sort": "numplays"
+	},
+	{
+		"filter": "not-long",
+		"sort": "averageweight"
+	},
+	{
+		"filter": "not-long",
+		"sort": "playingtime"
+	},
+	{
+		"filter": "light",
+		"sort": "days_since_last_played"
+	},
+	{
+		"filter": "light",
+		"sort": "numplays"
+	},
+	{
+		"filter": "light",
+		"sort": "averageweight"
+	},
+	{
+		"filter": "light",
+		"sort": "playingtime"
+	},
+	{
+		"filter": "not-light",
+		"sort": "days_since_last_played"
+	},
+	{
+		"filter": "not-light",
+		"sort": "numplays"
+	},
+	{
+		"filter": "not-light",
+		"sort": "averageweight"
+	},
+	{
+		"filter": "not-light",
+		"sort": "playingtime"
+	},
+	{
+		"filter": "heavy",
+		"sort": "days_since_last_played"
+	},
+	{
+		"filter": "heavy",
+		"sort": "numplays"
+	},
+	{
+		"filter": "heavy",
+		"sort": "averageweight"
+	},
+	{
+		"filter": "heavy",
+		"sort": "playingtime"
+	},
+	{
+		"filter": "not-heavy",
+		"sort": "days_since_last_played"
+	},
+	{
+		"filter": "not-heavy",
+		"sort": "numplays"
+	},
+	{
+		"filter": "not-heavy",
+		"sort": "averageweight"
+	},
+	{
+		"filter": "not-heavy",
+		"sort": "playingtime"
+	}
+]
