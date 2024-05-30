@@ -142,5 +142,21 @@
 	{
 		"filter": "not-heavy",
 		"sort": "playingtime"
+	},
+	{
+		"filter": "best-player",
+		"sort": "days_since_last_played"
+	},
+	{
+		"filter": "best-player",
+		"sort": "numplays"
+	},
+	{
+		"filter": "best-player",
+		"sort": "averageweight"
+	},
+	{
+		"filter": "best-player",
+		"sort": "playingtime"
 	}
 ]
