@@ -26,8 +26,7 @@ pagination:
 			{% for player_count in (1..8) %}
 			<!-- n-players stats -->
 				<div>
-					<div id="players-{{ player_count }}"  >
-					</div>
+					<div id="players-{{ player_count }}"  > </div>
 						<div class="sticky top-0 px-4 py-3 flex justify-between items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10"">
 							<div>
 							<!-- left side -->
@@ -107,7 +106,7 @@ pagination:
 							<!-- end right side -->
 
 						</div>
-						<div class="grid grid-cols-1 items-start  hover:items-stretch">
+						<div id="magic-{{player_count}}" class="grid grid-cols-1 items-start  hover:items-stretch sorting_container">
 
 						{% for game in sorted_players %} 
 						{% case filter.filter %}
@@ -134,7 +133,13 @@ pagination:
 						{% endcase %}
 						{% if game.players ==player_count and should_display %}
 						{% assign days_since = game.days_since_last_played | at_most: 360 %}
-						<a class="shadow p-1 mx-2 my-1 text-sm rounded" target=”_blank” href="{{ game.url }}">
+						<a class="shadow p-1 mx-2 my-1 text-sm rounded sortable" target=”_blank” href="{{ game.url }}" 
+							data-name="{{ game.name}}"
+							data-rating="{{ game.rating}}"
+							data-numplays="{{ game.numplays}}"
+							data-playingtime="{{ game.playingtime}}"
+							data-days="{{ game.days_since_last_played}}"
+							>
 							<div class="flex justify-between">
 
 								<div class="truncate">
@@ -211,15 +216,82 @@ pagination:
 		</div>
 
 		<!-- Players Menu -->
-		<div class="sticky bottom-0 grid grid-cols-8 grid-rows-1 z-10 w-full lg:hidden">
+		<div class="sticky bottom-0 grid grid-cols-9 grid-rows-1 z-10 w-full lg:hidden">
 		{% for player_count in (1..8) %}
 			<a class="px-4 py-3 flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" href="#players-{{ player_count }}">
 				P{{ player_count }}
 			</a>
+
 		{% endfor %}
+
+		<div id='reorder-button' data-index="0" class="px-3 py-3 flex items-center font-semibold 
+			data-[index='0']:text-blue-500
+			data-[index='1']:text-blue-900
+			data-[index='2']:text-white
+			data-[index='3']:text-slate-600
+			  bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" >
+					<i data-lucide="arrow-down-up"></i>
+			</div>
 		</div>
 		<!-- End Players Menu -->
 	</div>
+	{% comment %} <script src="{{"/script.js" | url }}"></script> {% endcomment %}
+	<script>
+
+// Get the container and the button
+const button = document.getElementById("reorder-button");
+const attributes = ['days', 'numplays', 'name', 'rating'];
+
+
+// Add an event listener to the button
+button.addEventListener("click", reorderDivs);
+
+// Function to reorder the divs
+function reorderDivs() {
+	// Get all the divs in the container
+	{% comment %} const container = document.getElementById("magic-2"); {% endcomment %}
+
+	const containers = document.querySelectorAll(".sorting_container");
+	const button = document.getElementById("reorder-button");
+
+
+	let attributeValue = parseInt(button.dataset.index, 10) || 0;
+	const attributeIndex = (attributeValue + 1) % attributes.length
+	const attribute = attributes[attributeIndex]
+	
+	containers.forEach(container => {
+
+		const divs = container.querySelectorAll(".sortable");
+		console.log(attribute)
+
+		// Create an array of the divs
+		const divArray = Array.from(divs);
+
+		// Sort the array of divs
+		divArray.sort((a, b) => {
+				const aValue = a.dataset[attribute];
+				const bValue = b.dataset[attribute];
+
+				// Check if the values are numeric
+				if (!isNaN(aValue) && !isNaN(bValue)) {
+						// Compare as numbers
+						return Number(bValue) - Number(aValue);
+				} else {
+						// Compare as strings
+						return aValue.localeCompare(bValue);
+				}
+		});
+
+		// Clear the container
+		container.innerHTML = "";
+
+		// Add the sorted divs back to the container
+		divArray.forEach((div) => container.appendChild(div));
+
+	});
+	button.dataset.index = attributeIndex;
+}
+	</script>
 	<script src="https://unpkg.com/lucide@latest"></script>
   <script>
     lucide.createIcons();
