@@ -56,6 +56,7 @@ def get_collection(bgg, **kwargs):
     return collection
 
 
+@retry(tries=10, delay=3, backoff=2)
 def get_games(game_ids, bgg):
     games_batch = bgg.game_list(game_ids)
     games_info = {game.id: game._data for game in games_batch if "id" in dir(game)}
