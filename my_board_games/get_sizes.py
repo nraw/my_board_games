@@ -18,6 +18,7 @@ def get_size(g):
     games_df["game_id"] = g.id
     games_df["size"] = games_df["width"] + games_df["length"] + games_df["depth"]
     games_df["size"] = games_df["width"] * games_df["length"] * games_df["depth"]
+    games_df["size"] = games_df["size"].astype(int)
 
     games_with_size = games_df[games_df["size"] > 0]
     if len(games_with_size):
