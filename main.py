@@ -5,6 +5,7 @@ from retry import retry
 
 #  from my_board_games.get_bbb_games import get_bbb_games
 from my_board_games.get_ratings import add_ratings, get_personal_ratings
+from my_board_games.get_sizes import add_sizes, get_sizes
 from my_board_games.get_suggested_players import get_suggested_players
 from my_board_games.logged_plays import add_logged_plays, get_logged_plays
 from my_board_games.make_charts import make_charts
@@ -28,6 +29,8 @@ def main():
     logger.info("Getting ratings")
     ratings = get_personal_ratings()
     games = add_ratings(games, ratings)
+    sizes = get_sizes(game_ids)
+    games = add_sizes(games, sizes)
     logger.info("Added ratings to metadata")
     logger.info("Getting suggested players table")
     suggested_players = get_suggested_players(games)
