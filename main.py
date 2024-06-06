@@ -37,6 +37,10 @@ def main():
     logger.info("Getting suggested players table")
     suggested_players = get_suggested_players(games)
     logger.info("Got suggested players table")
+    logger.info("Create metrics")
+    metrics = get_metrics(suggested_players)
+    logger.info("Obtained metrics")
+
     #  logger.info("Charting")
     #  make_charts(suggested_players)
     #  logger.info("Charted")

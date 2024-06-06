@@ -194,7 +194,6 @@ pagination:
 								
 							</div>
 							<!-- Progress -->
-
 							{% if days_since > 359 %}
 								{% assign days_colors = "bg-red-600 dark:bg-red-500" %}
 							{% else %}
@@ -215,6 +214,35 @@ pagination:
 
 				
 		</div>
+
+		<!-- Start Metrics section -->
+		<section class="p-6 rounded-lg shadow-lg">
+				<h2 class="text-2xl font-bold mb-4">Metrics</h2>
+				<ul class="space-y-2">
+						<li class="flex items-center">
+								<span class="text-sm text-slate-400 w-1/2">Average number of days since last played:</span>
+								<span class="font-semibold px-4">{{ metrics.average_days_since_last_played | round: 2 }}</span>
+						</li>
+						<li class="flex items-center">
+								<span class="text-sm text-slate-400 w-1/2">Game that hasn't been played in the longest:</span>
+								<span class="font-semibold px-4 w-1/2">{{ metrics.game_played_latest }}</span>
+						</li>
+						<li class="flex items-center">
+								<span class="text-sm text-slate-400 w-1/2">Max days since last played:</span>
+								<span class="font-semibold px-4 w-1/2">{{ metrics.max_days_since_last_played }}</span>
+						</li>
+						<li class="flex items-center">
+								<span class="text-sm text-slate-400 w-1/2">Last game played:</span>
+								<span class="font-semibold px-4 w-1/2">{{ metrics.game_last_played }}</span>
+						</li>
+
+						<li class="flex items-center">
+								<span class="text-sm text-slate-400 w-1/2">Number of games:</span>
+								<span class="font-semibold px-4 w-1/2">{{ metrics.num_games }}</span>
+						</li>
+				</ul>
+		</section>
+		<!-- End Metrics section -->
 
 		<!-- Players Menu -->
 		<div class="sticky bottom-0 grid grid-cols-9 grid-rows-1 z-10 w-full lg:hidden">
