@@ -1,14 +1,21 @@
 import pandas as pd
 from boardgamegeek import BGGClient
+from retry import retry
 from tqdm import tqdm
 
 
 def get_sizes(game_ids):
     bgg = BGGClient()
-    games_sizes = [bgg.game(game_id=bgg_id, versions=True) for bgg_id in tqdm(game_ids)]
+    games_sizes = [get_game_size_data(bgg, game_id) for game_id in tqdm(game_ids)]
     sizes = pd.concat([get_size(g) for g in games_sizes])
     sizes = sizes.reset_index()
     return sizes
+
+
+@retry(tries=10, delay=3, backoff=2)
+def get_game_size_data(bgg, game_id):
+    g = bgg.game(game_id=game_id, versions=True)
+    return g
 
 
 def get_size(g):

@@ -3,6 +3,8 @@ from boardgamegeek import BGGClient
 from loguru import logger
 from retry import retry
 
+from my_board_games.get_metrics import get_metrics
+
 #  from my_board_games.get_bbb_games import get_bbb_games
 from my_board_games.get_ratings import add_ratings, get_personal_ratings
 from my_board_games.get_sizes import add_sizes, get_sizes
