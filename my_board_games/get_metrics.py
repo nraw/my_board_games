@@ -15,16 +15,16 @@ def get_metrics():
         else None
     )
     max_days_since_last_played = (
-        max([g["days_since_last_played"] for g in played_games])
-        if played_games
-        else None
+        max([g["days_since_last_played"] for g in played_games]) if played_games else 0
     )
+    gain_from_max_played = max_days_since_last_played / len(played_games)
     metrics = dict(
         num_games=num_games,
         game_last_played=game_last_played,
         game_played_latest=game_played_latest,
         average_days_since_last_played=average_days_since_last_played,
         max_days_since_last_played=max_days_since_last_played,
+        gain_from_max_played=gain_from_max_played,
     )
     json.dump(metrics, open("data/metrics.json", "w"))
     return metrics

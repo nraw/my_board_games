@@ -229,7 +229,10 @@ pagination:
 						</li>
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Max days since last played:</span>
-								<span class="font-semibold px-4 w-1/2">{{ metrics.max_days_since_last_played }}</span>
+								<div class="font-semibold px-4 w-1/2">
+									<span>{{ metrics.max_days_since_last_played }}</span>
+									<span class="text-slate-400 pl-2"> (- {{ metrics.gain_from_max_played | round: 2 }})</span>
+								</div>
 						</li>
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Last game played:</span>
