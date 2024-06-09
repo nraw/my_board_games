@@ -1,7 +1,8 @@
 import json
 
 
-def get_metrics(suggested_players):
+def get_metrics():
+    suggested_players = json.load(open("data/suggested_players.json"))
     owned_games = [g for g in suggested_players if g["is_best_player"]]
     num_games = len(owned_games)
     played_games = [g for g in owned_games if g["last_played"]]

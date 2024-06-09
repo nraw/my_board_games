@@ -4,7 +4,6 @@ from loguru import logger
 from retry import retry
 
 from my_board_games.get_metrics import get_metrics
-
 #  from my_board_games.get_bbb_games import get_bbb_games
 from my_board_games.get_ratings import add_ratings, get_personal_ratings
 from my_board_games.get_sizes import add_sizes, get_sizes
@@ -40,7 +39,7 @@ def main():
     suggested_players = get_suggested_players(games)
     logger.info("Got suggested players table")
     logger.info("Create metrics")
-    metrics = get_metrics(suggested_players)
+    metrics = get_metrics()
     logger.info("Obtained metrics")
 
     #  logger.info("Charting")
