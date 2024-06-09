@@ -27,7 +27,7 @@ pagination:
 			<!-- n-players stats -->
 				<div>
 					<div id="players-{{ player_count }}"  > </div>
-						<div class="sticky top-0 px-4 py-3 flex justify-between items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10"">
+						<div class="z-20 sticky top-0 px-4 py-3 flex justify-between items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10"">
 							<div>
 							<!-- left side -->
 								Players: {{ player_count }}
@@ -199,8 +199,12 @@ pagination:
 							{% else %}
 								{% assign days_colors = "bg-blue-600 dark:bg-blue-500" %}
 							{% endif %}
-							<div class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700" role="progressbar" aria-valuenow="{{ days_since | divided_by: 3.6}}" aria-valuemin="0" aria-valuemax="100">
-								<div class="{{ days_colors }} flex flex-col justify-center rounded-full overflow-hidden text-xs text-white text-center whitespace-nowrap transition duration-500" style="width: {{ days_since | divided_by: 3.6}}%"></div>
+							<div class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700 relative" role="progressbar" aria-valuenow="{{ days_since | divided_by: 3.6}}" aria-valuemin="0" aria-valuemax="100">
+									<div class="{{ days_colors }} flex flex-col justify-center rounded-full overflow-hidden text-xs text-white text-center whitespace-nowrap transition duration-500" style="width: {{ days_since | divided_by: 3.6}}%"></div>
+									{% for i in (1..12) %}
+											<div class="absolute h-full bg-neutral-700 z-0" style="width: 4px; left: {{ i | times: 8.33 }}%;"></div>
+											<div class="absolute h-full bg-gray-500" style="width: 1px; left: {{ i | times: 8.33 }}%;"></div>
+									{% endfor %}
 							</div>
 							<!-- End Progress -->
 						</a>
@@ -242,6 +246,10 @@ pagination:
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Number of games:</span>
 								<span class="font-semibold px-4 w-1/2">{{ metrics.num_games }}</span>
+						</li>
+						<li class="flex items-center">
+								<span class="text-sm text-slate-400 w-1/2">Refreshed at:</span>
+								<span class="font-semibold px-4 w-1/2">{{ page.date | date: "%Y-%m-%d %H:%M"  }}</span>
 						</li>
 				</ul>
 		</section>
