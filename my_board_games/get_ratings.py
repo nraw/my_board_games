@@ -7,7 +7,7 @@ from retry import retry
 from my_board_games.settings import conf
 
 
-@retry(tries=10, delay=3, backoff=2, logger=logger)
+@retry(tries=10, delay=3, backoff=2)
 def get_personal_ratings():
     username = conf["user_name"]
     ratings = []

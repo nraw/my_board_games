@@ -66,16 +66,30 @@ def get_collection(bgg, **kwargs):
     return collection
 
 
-@retry(tries=10, delay=3, backoff=2)
 def get_games(game_ids, bgg):
-    games_batch = bgg.game_list(game_ids)
-    games_info = {game.id: game._data for game in games_batch if "id" in dir(game)}
+    games_batches = get_games_in_batches(game_ids, bgg)
+    games_info = {game.id: game._data for game in games_batches if "id" in dir(game)}
     games = pd.DataFrame(games_info).T
     games["url"] = "https://boardgamegeek.com/boardgame/" + games["id"].astype("str")
     games["average_rating"] = games["stats"].apply(lambda x: x["average"])
     games["short_name"] = games["name"].apply(shorten_name)
     games = filter_quasi_expansions(games)
     return games
+
+
+def get_games_in_batches(game_ids, bgg, batch_size=20):
+    games_batches = []
+    for i in range(0, len(game_ids), batch_size):
+        batch = game_ids[i : i + batch_size]
+        games_batch = get_games_batch(batch, bgg)
+        games_batches.extend(games_batch)
+    return games_batches
+
+
+@retry(tries=10, delay=3, backoff=2)
+def get_games_batch(batch, bgg):
+    games_batch = bgg.game_list(batch)
+    return games_batch
 
 
 def shorten_name(name):
