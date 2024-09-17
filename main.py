@@ -23,7 +23,9 @@ def main():
     logger.info("Getting games metadata")
     games = get_games(game_ids, bgg)
     logger.info("Got games metadata")
-
+    logger.info("Add numplays")
+    games = add_numplays(games, my_games)
+    logger.info("Added numplays")
     logger.info("Getting logged plays")
     logged_plays = get_logged_plays()
     games = add_logged_plays(games, logged_plays)
