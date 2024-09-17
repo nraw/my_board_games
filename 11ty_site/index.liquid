@@ -142,6 +142,11 @@ pagination:
 							{% else %}
 								{% assign should_display = true %}
 						{% endcase %}
+						{% if player_count == -1 %}
+							{% assign should_display = game.is_best_player and should_display %}
+						{% endif %}
+
+
 						{% if game.players ==player_count or player_count == -1 and should_display %}
 						{% assign days_since = game.days_since_last_played | at_most: 360 %}
 						<a class="shadow p-1 mx-2 my-1 text-sm rounded sortable" target=”_blank” href="{{ game.url }}" 
