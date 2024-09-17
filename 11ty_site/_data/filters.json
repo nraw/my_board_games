@@ -158,5 +158,205 @@
 	{
 		"filter": "best-player",
 		"sort": "playingtime"
+	},
+	{
+		"filter": "short",
+		"sort": "days_since_last_played",
+		"all_players": "all"
+	},
+	{
+		"filter": "short",
+		"sort": "numplays",
+		"all_players": "all"
+	},
+	{
+		"filter": "short",
+		"sort": "averageweight",
+		"all_players": "all"
+	},
+	{
+		"filter": "short",
+		"sort": "playingtime",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-short",
+		"sort": "days_since_last_played",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-short",
+		"sort": "numplays",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-short",
+		"sort": "averageweight",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-short",
+		"sort": "playingtime",
+		"all_players": "all"
+	},
+	{
+		"filter": "all",
+		"sort": "days_since_last_played",
+		"all_players": "all"
+	},
+	{
+		"filter": "all",
+		"sort": "numplays",
+		"all_players": "all"
+	},
+	{
+		"filter": "all",
+		"sort": "averageweight",
+		"all_players": "all"
+	},
+	{
+		"filter": "all",
+		"sort": "playingtime",
+		"all_players": "all"
+	},
+	{
+		"filter": "long",
+		"sort": "days_since_last_played",
+		"all_players": "all"
+	},
+	{
+		"filter": "long",
+		"sort": "numplays",
+		"all_players": "all"
+	},
+	{
+		"filter": "long",
+		"sort": "averageweight",
+		"all_players": "all"
+	},
+	{
+		"filter": "long",
+		"sort": "playingtime",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-long",
+		"sort": "days_since_last_played",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-long",
+		"sort": "numplays",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-long",
+		"sort": "averageweight",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-long",
+		"sort": "playingtime",
+		"all_players": "all"
+	},
+	{
+		"filter": "light",
+		"sort": "days_since_last_played",
+		"all_players": "all"
+	},
+	{
+		"filter": "light",
+		"sort": "numplays",
+		"all_players": "all"
+	},
+	{
+		"filter": "light",
+		"sort": "averageweight",
+		"all_players": "all"
+	},
+	{
+		"filter": "light",
+		"sort": "playingtime",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-light",
+		"sort": "days_since_last_played",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-light",
+		"sort": "numplays",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-light",
+		"sort": "averageweight",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-light",
+		"sort": "playingtime",
+		"all_players": "all"
+	},
+	{
+		"filter": "heavy",
+		"sort": "days_since_last_played",
+		"all_players": "all"
+	},
+	{
+		"filter": "heavy",
+		"sort": "numplays",
+		"all_players": "all"
+	},
+	{
+		"filter": "heavy",
+		"sort": "averageweight",
+		"all_players": "all"
+	},
+	{
+		"filter": "heavy",
+		"sort": "playingtime",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-heavy",
+		"sort": "days_since_last_played",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-heavy",
+		"sort": "numplays",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-heavy",
+		"sort": "averageweight",
+		"all_players": "all"
+	},
+	{
+		"filter": "not-heavy",
+		"sort": "playingtime",
+		"all_players": "all"
+	},
+	{
+		"filter": "best-player",
+		"sort": "days_since_last_played",
+		"all_players": "all"
+	},
+	{
+		"filter": "best-player",
+		"sort": "numplays",
+		"all_players": "all"
+	},
+	{
+		"filter": "best-player",
+		"sort": "averageweight",
+		"all_players": "all"
+	},
+	{
+		"filter": "best-player",
+		"sort": "playingtime",
+		"all_players": "all"
 	}
 ]

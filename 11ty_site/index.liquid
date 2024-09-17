@@ -3,7 +3,7 @@ pagination:
   data: filters
   size: 1
   alias: filter
-	permalink: "/f/{{ filter.filter | slugify }}/s/{{ filter.sort | slugify }}.html"
+	permalink: "/f/{{ filter.filter | slugify }}/s/{{ filter.sort | slugify }}{{filter.all_players}}.html"
 ---
 <!doctype html>
 <html lang="en">
@@ -22,15 +22,26 @@ pagination:
 
 			<div class="grid grid-cols-1 lg:grid-cols-8" id="all-players-table">
 			{% assign sorted_players = suggested_players | sort: filter.sort | reverse %}
+			{% if filter.all_players == "all" %}
+				{% assign player_counts = (-1..-1) %}
+			{% else %}
+				{% assign player_counts = (1..8) %}
+			{% endif %}
 
-			{% for player_count in (1..8) %}
+
+			{% for player_count in player_counts %}
 			<!-- n-players stats -->
 				<div>
 					<div id="players-{{ player_count }}"  > </div>
 						<div class="z-20 sticky top-0 px-4 py-3 flex justify-between items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10"">
 							<div>
 							<!-- left side -->
-								Players: {{ player_count }}
+							Players: 
+							{% if player_count == -1 %}
+								All
+							{% else %}
+								{{ player_count }}
+							{% endif %}
 							</div>
 							<!-- end left side -->
 							<!-- right side -->
@@ -131,7 +142,7 @@ pagination:
 							{% else %}
 								{% assign should_display = true %}
 						{% endcase %}
-						{% if game.players ==player_count and should_display %}
+						{% if game.players ==player_count or player_count == -1 and should_display %}
 						{% assign days_since = game.days_since_last_played | at_most: 360 %}
 						<a class="shadow p-1 mx-2 my-1 text-sm rounded sortable" target=”_blank” href="{{ game.url }}" 
 							data-name="{{ game.name}}"
