@@ -21,13 +21,13 @@ def get_personal_ratings():
             #  game_name = item["name"]["#text"]
             game_id = int(item["@objectid"])
             rating = item.get("stats", {}).get("rating", None).get("@value", None)
-            numplays = int(item.get("numplays", "0"))
+            #  numplays = int(item.get("numplays", "0")) # this one doesn't return right numbers
             if rating is not None:
                 ratings.append(
                     {
                         "id": game_id,
                         "rating": rating,
-                        "numplays": numplays,
+                        #  "numplays": numplays,
                     }
                 )
     if len(ratings) == 0:

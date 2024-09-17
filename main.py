@@ -23,6 +23,7 @@ def main():
     logger.info("Getting games metadata")
     games = get_games(game_ids, bgg)
     logger.info("Got games metadata")
+
     logger.info("Getting logged plays")
     logged_plays = get_logged_plays()
     games = add_logged_plays(games, logged_plays)
@@ -58,6 +59,13 @@ def get_my_games(bgg) -> pd.DataFrame:
     my_games = my_games[my_games.own == "1"]
     my_games = my_games[~my_games.id.isin(exclude_list)]
     return my_games
+
+
+def add_numplays(games, my_games):
+    games = games.merge(
+        my_games[["id", "numplays"]], on="id", how="left", validate="one_to_one"
+    )
+    return games
 
 
 @retry(tries=10, delay=3, backoff=2)
