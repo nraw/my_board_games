@@ -1,10 +1,3 @@
----
-pagination:
-  data: filters
-  size: 1
-  alias: filter
-	permalink: "/f/{{ filter.filter | slugify }}/s/{{ filter.sort | slugify }}{{filter.all_players}}.html"
----
 <!doctype html>
 <html lang="en">
 
@@ -13,6 +6,11 @@ pagination:
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title></title>
 	<link href="{{'/style.css' | url }}" rel="stylesheet" />
+	 <style>
+				.hidden {
+						display: none;
+				}
+	</style>
 </head>
 
 <body class="dark:bg-slate-800 dark:text-white">
@@ -21,7 +19,7 @@ pagination:
 
 
 			<div class="grid grid-cols-1 lg:grid-cols-8" id="all-players-table">
-			{% assign sorted_players = suggested_players | sort: filter.sort | reverse %}
+			{% assign sorted_players = suggested_players | sort: "days_since_last_played" | reverse %}
 			{% if filter.all_players == "all" %}
 				{% assign player_counts = (-1..-1) %}
 			{% else %}
@@ -47,70 +45,72 @@ pagination:
 							<!-- right side -->
 							<div class='flex'>
 								{% if filter.filter == "best-player" %}
-								<a href="{{"/f"| url }}/all/s/{{ filter.sort |slugify }}.html#players-{{ player_count }}" class="flex items-center border border-blue-600 dark:border-blue-500 rounded px-1 my-1 mx-2" href="#">🔸</a>
+								<a class="filterBestPlayer flex items-center border border-blue-600 dark:border-blue-500 rounded px-1 my-1 mx-2" href="#">🔸</a>
 								{% else %}
-								<a href="{{"/f"| url }}/best-player/s/{{ filter.sort |slugify }}.html#players-{{ player_count }}" class="flex items-center border dark:border-white/50 rounded px-1 my-1 mx-2" href="#">🔸</a>
+								<a class="filterBestPlayer flex items-center border dark:border-white/50 rounded px-1 my-1 mx-2 h-4" href="#">🔸</a>
 								{% endif %}
-								<div class='flex items-center'>
-									{% if filter.filter == "short" %}
-										<a href="{{"/f" | url }}/not-short/s/{{ filter.sort | slugify }}.html#players-{{ player_count }}" class="text-blue-500 px-2 py-1 mx-1 text-sm">
-										<i data-lucide="rabbit" class='w-3 m-0'></i>
-									</a>
-									{% elsif filter.filter == "not-short" %}
-									<a href="{{"/f" | url }}/all/s/{{ filter.sort | slugify }}.html#players-{{ player_count }}" class="text-red-500 px-2 py-1 mx-1 text-sm">
-										<i data-lucide="rabbit" class='w-3 m-0'></i>
-									</a>
-									{% else %}
-									<a href="{{"/f" | url }}/short/s/{{ filter.sort | slugify }}.html#players-{{ player_count }}" class="px-2 py-1 mx-1 text-sm">
-										<i data-lucide="rabbit" class='w-3 m-0'></i>
-									</a>
-									{% endif %}
-									/
-									{% if filter.filter == "long" %}
-									<a href="{{"/f" | url }}/not-long/s/{{ filter.sort | slugify }}.html#players-{{ player_count }}" class="text-blue-500 px-2 py-1 mx-1 text-sm">
-										<i data-lucide="snail" class='w-3 m-0'></i>
-									</a>
-									{% elsif filter.filter == "not-long" %}
-									<a href="{{"/f" | url }}/all/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-red-500 px-2 py-1 mx-1 text-sm">
-										<i data-lucide="snail" class='w-3 m-0'></i>
-									</a>
-									{% else %}
-									<a href="{{"/f" | url }}/long/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="px-2 py-1 mx-1 text-sm">
-										<i data-lucide="snail" class='w-3 m-0'></i>
-									</a>
-									{% endif %}
-								</div>
+								<div class='flex flex-row lg:flex-col items-center'>
+									<div class='flex items-center'>
+										{% if filter.filter == "short" %}
+											<a href="#" class="filterShort text-blue-500 px-2 py-1 mx-1 text-sm">
+											<i data-lucide="rabbit" class='w-3 m-0'></i>
+										</a>
+										{% elsif filter.filter == "not-short" %}
+										<a href="#" class="filterShort text-red-500 px-2 py-1 mx-1 text-sm">
+											<i data-lucide="rabbit" class='w-3 m-0'></i>
+										</a>
+										{% else %}
+										<a href="#" class="filterShort px-2 py-1 mx-1 text-sm">
+											<i data-lucide="rabbit" class='w-3 m-0'></i>
+										</a>
+										{% endif %}
+										/
+										{% if filter.filter == "long" %}
+										<a href="#" class="filterLong text-blue-500 px-2 py-1 mx-1 text-sm">
+											<i data-lucide="snail" class='w-3 m-0'></i>
+										</a>
+										{% elsif filter.filter == "not-long" %}
+										<a href="#" class="filterLong text-red-500 px-2 py-1 mx-1 text-sm">
+											<i data-lucide="snail" class='w-3 m-0'></i>
+										</a>
+										{% else %}
+										<a href="#" class="filterLong px-2 py-1 mx-1 text-sm">
+											<i data-lucide="snail" class='w-3 m-0'></i>
+										</a>
+										{% endif %}
+									</div>
 
-								<div class='flex items-center'>
-									{% if filter.filter == "light" %}
-									<a href="{{"/f" | url }}/not-light/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-blue-500 px-2 py-1 mx-1 text-sm">
-										<i data-lucide="feather" class='w-3 m-0'></i>
-									</a>
-								{% elsif filter.filter == "not-light" %}
-									<a href="{{"/f" | url }}/all/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-red-500 px-2 py-1 mx-1 text-sm">
-										<i data-lucide="feather" class='w-3 m-0'></i>
-									</a>
-									{% else %}
-									<a href="{{"/f" | url }}/light/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="px-2 py-1 mx-1 text-sm">
-										<i data-lucide="feather" class='w-3 m-0'></i>
-									</a>
-									{% endif %}
-									/
-									{% if filter.filter == "heavy" %}
-									<a href="{{"/f" | url }}/not-heavy/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-blue-500 px-2 py-1 mx-1 text-sm">
-										<i data-lucide="dumbbell" class='w-3 m-0'></i>
-									</a>
-								{% elsif filter.filter == "not-heavy" %}
-									<a href="{{"/f" | url }}/all/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="text-red-500 px-2 py-1 mx-1 text-sm">
-										<i data-lucide="dumbbell" class='w-3 m-0'></i>
-									</a>
-									{% else %}
-									<a href="{{"/f" | url }}/heavy/s/{{ filter.sort | slugify }}#players-{{ player_count }}" class="px-2 py-1 mx-1 text-sm">
-										<i data-lucide="dumbbell" class='w-3 m-0'></i>
+									<div class='flex items-center'>
+										{% if filter.filter == "light" %}
+										<a href="#" class="filterLight text-blue-500 px-2 py-1 mx-1 text-sm">
+											<i data-lucide="feather" class='w-3 m-0'></i>
+										</a>
+									{% elsif filter.filter == "not-light" %}
+										<a href="#" class="filterLight text-red-500 px-2 py-1 mx-1 text-sm">
+											<i data-lucide="feather" class='w-3 m-0'></i>
+										</a>
+										{% else %}
+										<a href="#" class="filterLight px-2 py-1 mx-1 text-sm">
+											<i data-lucide="feather" class='w-3 m-0'></i>
+										</a>
+										{% endif %}
+										/
+										{% if filter.filter == "heavy" %}
+										<a href="#" class="filterHeavy text-blue-500 px-2 py-1 mx-1 text-sm">
+											<i data-lucide="dumbbell" class='w-3 m-0'></i>
+										</a>
+									{% elsif filter.filter == "not-heavy" %}
+										<a href="#" class="filterHeavy text-red-500 px-2 py-1 mx-1 text-sm">
+											<i data-lucide="dumbbell" class='w-3 m-0'></i>
+										</a>
+										{% else %}
+										<a href="#" class="filterHeavy px-2 py-1 mx-1 text-sm">
+											<i data-lucide="dumbbell" class='w-3 m-0'></i>
 
-									</a>
-									{% endif %}
+										</a>
+										{% endif %}
 
+									</div>
 								</div>
 
 							</div>
@@ -142,9 +142,9 @@ pagination:
 							{% else %}
 								{% assign should_display = true %}
 						{% endcase %}
-						{% if player_count == -1 %}
-							{% assign should_display = game.is_best_player and should_display %}
-						{% endif %}
+						{% comment %} {% if player_count == -1 %} {% endcomment %}
+						{% comment %}   {% assign should_display = game.is_best_player and should_display %} {% endcomment %}
+						{% comment %} {% endif %} {% endcomment %}
 
 
 						{% if game.players ==player_count or player_count == -1 and should_display %}
@@ -152,6 +152,8 @@ pagination:
 						<a class="shadow p-1 mx-2 my-1 text-sm rounded sortable" target=”_blank” href="{{ game.url }}" 
 							data-name="{{ game.name}}"
 							data-rating="{{ game.rating}}"
+							data-averageweight="{{ game.stats.averageweight }}"
+							data-isbestplayer="{{ game.is_best_player }}"
 							data-numplays="{{ game.numplays}}"
 							data-playingtime="{{ game.playingtime}}"
 							data-days="{{ game.days_since_last_played}}"
@@ -272,7 +274,7 @@ pagination:
 		<!-- End Metrics section -->
 
 		<!-- Players Menu -->
-		<div class="sticky bottom-0 grid grid-cols-9 grid-rows-1 z-10 w-full lg:hidden">
+		<div class="sticky bottom-0 grid grid-cols-9 grid-rows-1 z-10 w-full">
 		{% for player_count in (1..8) %}
 			<a class="px-4 py-3 flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" href="#players-{{ player_count }}">
 				P{{ player_count }}
@@ -292,7 +294,7 @@ pagination:
 		</div>
 		<!-- End Players Menu -->
 	</div>
-	{% comment %} <script src="{{"/script.js" | url }}"></script> {% endcomment %}
+
 	<script>
 
 // Get the container and the button
@@ -348,6 +350,85 @@ function reorderDivs() {
 	});
 	button.dataset.index = attributeIndex;
 }
+	</script>
+	<script>
+// Define the CSS class for hiding elements
+const HIDE_CLASS = 'hidden';
+
+// Get all the game elements
+const games = document.querySelectorAll('.sortable');
+
+// Define the filter functions
+function filterShort() {
+    games.forEach(game => {
+        const playingTime = Number(game.dataset.playingtime);
+        if (playingTime >= 21) {
+            game.classList.add(HIDE_CLASS);
+						console.log(game.classList)
+        } else {
+            game.classList.remove(HIDE_CLASS);
+        }
+    });
+}
+
+function filterLong() {
+    games.forEach(game => {
+        const playingTime = Number(game.dataset.playingtime);
+        if (playingTime <= 89) {
+            game.classList.add(HIDE_CLASS);
+        } else {
+            game.classList.remove(HIDE_CLASS);
+        }
+    });
+}
+
+function filterLight() {
+    games.forEach(game => {
+        const weight = Number(game.dataset.averageweight);
+        if (weight >= 1.5) {
+            game.classList.add(HIDE_CLASS);
+        } else {
+            game.classList.remove(HIDE_CLASS);
+        }
+    });
+}
+
+function filterHeavy() {
+    games.forEach(game => {
+        const weight = Number(game.dataset.averageweight);
+        if (weight <= 2) {
+            game.classList.add(HIDE_CLASS);
+        } else {
+            game.classList.remove(HIDE_CLASS);
+        }
+    });
+}
+
+function filterBestPlayer() {
+    games.forEach(game => {
+        const isBestPlayer = game.dataset.isbestplayer === 'true';
+        if (!isBestPlayer) {
+            game.classList.add(HIDE_CLASS);
+        } else {
+            game.classList.remove(HIDE_CLASS);
+        }
+    });
+}
+
+// Get all the buttons for each filter
+const shortButtons = document.querySelectorAll('.filterShort');
+const longButtons = document.querySelectorAll('.filterLong');
+const lightButtons = document.querySelectorAll('.filterLight');
+const heavyButtons = document.querySelectorAll('.filterHeavy');
+const bestPlayerButtons = document.querySelectorAll('.filterBestPlayer');
+
+// Add the event listener to each button
+shortButtons.forEach(button => button.addEventListener('click', filterShort));
+longButtons.forEach(button => button.addEventListener('click', filterLong));
+lightButtons.forEach(button => button.addEventListener('click', filterLight));
+heavyButtons.forEach(button => button.addEventListener('click', filterHeavy));
+bestPlayerButtons.forEach(button => button.addEventListener('click', filterBestPlayer));
+
 	</script>
 	<script src="https://unpkg.com/lucide@latest"></script>
   <script>
