@@ -51,7 +51,7 @@ pagination:
 							<!-- end left side -->
 							<!-- right side -->
 							<div class='flex'>
-									<a data-selected="1" data-selectedmax="2" class="filterBestPlayer flex items-center border rounded px-1 my-1 mx-2
+									<a data-selected="0" data-selectedmax="2" class="filterBestPlayer flex items-center border rounded px-1 my-1 mx-2
 										data-[selected='0']:dark:border-white/50
 										data-[selected='1']:dark:border-blue-500
 										" href="#">🔸</a>
@@ -386,28 +386,28 @@ function increaseDataSelected(button) {
 }
 // Add the event listener to each button
 shortButtons.forEach(button => button.addEventListener('click', function() {
-    filterShort();
     increaseDataSelected(button);
+    filterShort();
 }));
 
 longButtons.forEach(button => button.addEventListener('click', function() {
-    filterLong();
     increaseDataSelected(button);
+    filterLong();
 }));
 
 lightButtons.forEach(button => button.addEventListener('click', function() {
-    filterLight();
     increaseDataSelected(button);
+    filterLight();
 }));
 
 heavyButtons.forEach(button => button.addEventListener('click', function() {
-    filterHeavy();
     increaseDataSelected(button);
+    filterHeavy();
 }));
 
 bestPlayerButtons.forEach(button => button.addEventListener('click', function() {
-    filterBestPlayer();
     increaseDataSelected(button);
+    filterBestPlayer();
 }));
 
 	</script>
