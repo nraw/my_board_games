@@ -1,3 +1,10 @@
+---
+pagination:
+  data: filters
+  size: 1
+  alias: filter
+	permalink: "index{{filter.all_players}}.html"
+---
 <!doctype html>
 <html lang="en">
 
@@ -44,71 +51,40 @@
 							<!-- end left side -->
 							<!-- right side -->
 							<div class='flex'>
-								{% if filter.filter == "best-player" %}
-								<a class="filterBestPlayer flex items-center border border-blue-600 dark:border-blue-500 rounded px-1 my-1 mx-2" href="#">🔸</a>
-								{% else %}
-								<a class="filterBestPlayer flex items-center border dark:border-white/50 rounded px-1 my-1 mx-2 h-4" href="#">🔸</a>
-								{% endif %}
+									<a data-selected="1" data-selectedmax="2" class="filterBestPlayer flex items-center border rounded px-1 my-1 mx-2
+										data-[selected='0']:dark:border-white/50
+										data-[selected='1']:dark:border-blue-500
+										" href="#">🔸</a>
 								<div class='flex flex-row lg:flex-col items-center'>
 									<div class='flex items-center'>
-										{% if filter.filter == "short" %}
-											<a href="#" class="filterShort text-blue-500 px-2 py-1 mx-1 text-sm">
+										<a href="#" class="filterShort  px-2 py-1 mx-1 text-sm
+												data-[selected='1']:dark:text-blue-500
+												data-[selected='2']:dark:text-red-500
+												">
 											<i data-lucide="rabbit" class='w-3 m-0'></i>
 										</a>
-										{% elsif filter.filter == "not-short" %}
-										<a href="#" class="filterShort text-red-500 px-2 py-1 mx-1 text-sm">
-											<i data-lucide="rabbit" class='w-3 m-0'></i>
-										</a>
-										{% else %}
-										<a href="#" class="filterShort px-2 py-1 mx-1 text-sm">
-											<i data-lucide="rabbit" class='w-3 m-0'></i>
-										</a>
-										{% endif %}
 										/
-										{% if filter.filter == "long" %}
-										<a href="#" class="filterLong text-blue-500 px-2 py-1 mx-1 text-sm">
+										<a href="#" class="filterLong px-2 py-1 mx-1 text-sm
+												data-[selected='1']:dark:text-blue-500
+												data-[selected='2']:dark:text-red-500
+											">
 											<i data-lucide="snail" class='w-3 m-0'></i>
 										</a>
-										{% elsif filter.filter == "not-long" %}
-										<a href="#" class="filterLong text-red-500 px-2 py-1 mx-1 text-sm">
-											<i data-lucide="snail" class='w-3 m-0'></i>
-										</a>
-										{% else %}
-										<a href="#" class="filterLong px-2 py-1 mx-1 text-sm">
-											<i data-lucide="snail" class='w-3 m-0'></i>
-										</a>
-										{% endif %}
 									</div>
-
 									<div class='flex items-center'>
-										{% if filter.filter == "light" %}
-										<a href="#" class="filterLight text-blue-500 px-2 py-1 mx-1 text-sm">
+										<a href="#" class="filterLight px-2 py-1 mx-1 text-sm
+												data-[selected='1']:dark:text-blue-500
+												data-[selected='2']:dark:text-red-500
+											">
 											<i data-lucide="feather" class='w-3 m-0'></i>
 										</a>
-									{% elsif filter.filter == "not-light" %}
-										<a href="#" class="filterLight text-red-500 px-2 py-1 mx-1 text-sm">
-											<i data-lucide="feather" class='w-3 m-0'></i>
-										</a>
-										{% else %}
-										<a href="#" class="filterLight px-2 py-1 mx-1 text-sm">
-											<i data-lucide="feather" class='w-3 m-0'></i>
-										</a>
-										{% endif %}
 										/
-										{% if filter.filter == "heavy" %}
-										<a href="#" class="filterHeavy text-blue-500 px-2 py-1 mx-1 text-sm">
+											<a href="#" class="filterHeavy px-2 py-1 mx-1 text-sm
+												data-[selected='1']:dark:text-blue-500
+												data-[selected='2']:dark:text-red-500
+												">
 											<i data-lucide="dumbbell" class='w-3 m-0'></i>
 										</a>
-									{% elsif filter.filter == "not-heavy" %}
-										<a href="#" class="filterHeavy text-red-500 px-2 py-1 mx-1 text-sm">
-											<i data-lucide="dumbbell" class='w-3 m-0'></i>
-										</a>
-										{% else %}
-										<a href="#" class="filterHeavy px-2 py-1 mx-1 text-sm">
-											<i data-lucide="dumbbell" class='w-3 m-0'></i>
-
-										</a>
-										{% endif %}
 
 									</div>
 								</div>
@@ -276,7 +252,7 @@
 		<!-- Players Menu -->
 		<div class="sticky bottom-0 grid grid-cols-9 grid-rows-1 z-10 w-full">
 		{% for player_count in (1..8) %}
-			<a class="px-4 py-3 flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" href="#players-{{ player_count }}">
+			<a class="px-4 py-3 flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" href="/#players-{{ player_count }}">
 				P{{ player_count }}
 			</a>
 
@@ -422,12 +398,37 @@ const lightButtons = document.querySelectorAll('.filterLight');
 const heavyButtons = document.querySelectorAll('.filterHeavy');
 const bestPlayerButtons = document.querySelectorAll('.filterBestPlayer');
 
+
+function increaseDataSelected(button) {
+    let currentVal = parseInt(button.getAttribute('data-selected')) || 0;
+    let maxVal = parseInt(button.getAttribute('data-selectedmax')) || 3;
+    button.setAttribute('data-selected', (currentVal + 1) % maxVal);
+}
 // Add the event listener to each button
-shortButtons.forEach(button => button.addEventListener('click', filterShort));
-longButtons.forEach(button => button.addEventListener('click', filterLong));
-lightButtons.forEach(button => button.addEventListener('click', filterLight));
-heavyButtons.forEach(button => button.addEventListener('click', filterHeavy));
-bestPlayerButtons.forEach(button => button.addEventListener('click', filterBestPlayer));
+shortButtons.forEach(button => button.addEventListener('click', function() {
+    filterShort();
+    increaseDataSelected(button);
+}));
+
+longButtons.forEach(button => button.addEventListener('click', function() {
+    filterLong();
+    increaseDataSelected(button);
+}));
+
+lightButtons.forEach(button => button.addEventListener('click', function() {
+    filterLight();
+    increaseDataSelected(button);
+}));
+
+heavyButtons.forEach(button => button.addEventListener('click', function() {
+    filterHeavy();
+    increaseDataSelected(button);
+}));
+
+bestPlayerButtons.forEach(button => button.addEventListener('click', function() {
+    filterBestPlayer();
+    increaseDataSelected(button);
+}));
 
 	</script>
 	<script src="https://unpkg.com/lucide@latest"></script>
