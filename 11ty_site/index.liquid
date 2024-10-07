@@ -417,6 +417,10 @@ bestPlayerButtons.forEach(button => button.addEventListener('click', function() 
     filterBestPlayer();
 }));
 
+{% if filter.all_players == "all" %}
+filterBestPlayer();
+{% endif %}
+
 	</script>
 	<script src="https://unpkg.com/lucide@latest"></script>
   <script>
