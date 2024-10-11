@@ -17,6 +17,12 @@ permalink: "index{{filter.all_players}}.html"
 				.hidden {
 						display: none;
 				}
+        /* Add styles for the selected state */
+        .sortable.selected {
+            background-color: #38bdf8; /* dark blue-gray */
+            color: white;
+            transition: background-color 0.3s ease;
+        }
 	</style>
 </head>
 
@@ -426,6 +432,36 @@ filterBestPlayer();
   <script>
     lucide.createIcons();
   </script>
+	<script>
+        // Swipe functionality
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let currentElement = null;
+
+        function handleTouchStart(event) {
+            touchStartX = event.touches[0].clientX;
+            currentElement = event.target.closest('.sortable');
+        }
+
+        function handleTouchEnd(event) {
+            if (!currentElement) return;
+            touchEndX = event.changedTouches[0].clientX;
+            handleSwipe();
+        }
+
+        function handleSwipe() {
+            const SWIPE_THRESHOLD = 50;
+            if (Math.abs(touchEndX - touchStartX) > SWIPE_THRESHOLD) {
+                currentElement.classList.toggle('selected');
+            }
+            currentElement = null;
+        }
+
+        document.querySelectorAll('.sortable').forEach(game => {
+            game.addEventListener('touchstart', handleTouchStart, false);
+            game.addEventListener('touchend', handleTouchEnd, false);
+        });
+	</script>
 </body>
 
 </html>
