@@ -19,7 +19,7 @@ permalink: "index{{filter.all_players}}.html"
 				}
         /* Add styles for the selected state */
         .sortable.selected {
-            background-color: #38bdf8; /* dark blue-gray */
+            background-color: #1d4ed8; /* dark blue-gray */
             color: white;
             transition: background-color 0.3s ease;
         }
@@ -61,6 +61,10 @@ permalink: "index{{filter.all_players}}.html"
 										data-[selected='0']:dark:border-white/50
 										data-[selected='1']:dark:border-blue-500
 										" href="#">🔸</a>
+									<a data-selected="0" data-selectedmax="2" class="filterSelected flex items-center border rounded px-1 my-1 mx-2 hidden
+										data-[selected='0']:dark:border-white/50
+										data-[selected='1']:dark:border-blue-500
+										" href="#">🔷</a>
 								<div class='flex flex-row lg:flex-col items-center'>
 									<div class='flex items-center'>
 										<a href="#" class="filterShort  px-2 py-1 mx-1 text-sm
@@ -238,13 +242,13 @@ permalink: "index{{filter.all_players}}.html"
 		<div class="sticky bottom-0 grid grid-cols-10 grid-rows-1 z-10 w-full">
 		{% for player_count in (1..8) %}
 
-			<a class="px-4 py-3 flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" href="{{"/#players-" | append: player_count |url}}">
+			<a class="py-3 justify-center flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" href="{{"/#players-" | append: player_count |url}}">
 				P{{ player_count }}
 			</a>
 
 		{% endfor %}
 
-			<a class="px-4 py-3 flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" href="indexall.html">
+			<a class="py-3 justify-center flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" href="indexall.html">
 				All
 			</a>
 
@@ -383,6 +387,18 @@ function filterBestPlayer() {
         }
     });
 }
+function filterSelected() {
+		const filterButton = document.querySelector('.filterSelected');
+		const isActive = filterButton.classList.toggle('active');
+		
+		games.forEach(game => {
+				if (isActive && !game.classList.contains('selected')) {
+						game.classList.add(HIDE_CLASS);
+				} else {
+						game.classList.remove(HIDE_CLASS);
+				}
+		});
+}
 
 // Get all the buttons for each filter
 const shortButtons = document.querySelectorAll('.filterShort');
@@ -390,6 +406,7 @@ const longButtons = document.querySelectorAll('.filterLong');
 const lightButtons = document.querySelectorAll('.filterLight');
 const heavyButtons = document.querySelectorAll('.filterHeavy');
 const bestPlayerButtons = document.querySelectorAll('.filterBestPlayer');
+const selectedButtons = document.querySelectorAll('.filterSelected');
 
 
 function increaseDataSelected(button) {
@@ -423,6 +440,11 @@ bestPlayerButtons.forEach(button => button.addEventListener('click', function() 
     filterBestPlayer();
 }));
 
+selectedButtons.forEach(button => button.addEventListener('click', function() {
+    increaseDataSelected(button);
+    filterSelected();
+}));
+
 {% if filter.all_players == "all" %}
 filterBestPlayer();
 {% endif %}
@@ -449,12 +471,37 @@ filterBestPlayer();
             handleSwipe();
         }
 
+				function showSelectedButtons() {
+
+					const selectedButtons = document.querySelectorAll('.filterSelected');
+
+					selectedButtons.forEach(button => {
+						button.classList.remove("hidden");
+					});
+				}
+
+
         function handleSwipe() {
             const SWIPE_THRESHOLD = 50;
             if (Math.abs(touchEndX - touchStartX) > SWIPE_THRESHOLD) {
-                currentElement.classList.toggle('selected');
+                const gameName = currentElement.dataset.name;
+                toggleSelectionForGame(gameName);
+								showSelectedButtons();
             }
             currentElement = null;
+        }
+
+        function toggleSelectionForGame(gameName) {
+            const allInstances = document.querySelectorAll(`.sortable[data-name="${gameName}"]`);
+            const isCurrentlySelected = currentElement.classList.contains('selected');
+            
+            allInstances.forEach(instance => {
+                if (isCurrentlySelected) {
+                    instance.classList.remove('selected');
+                } else {
+                    instance.classList.add('selected');
+                }
+            });
         }
 
         document.querySelectorAll('.sortable').forEach(game => {
