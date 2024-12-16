@@ -3,7 +3,7 @@ pagination:
   data: filters
   size: 1
   alias: filter
-permalink: "index{{filter.all_players}}.html"
+permalink: "{{ filter.user }}/index{{filter.all_players}}.html"
 ---
 <!doctype html>
 <html lang="en">
@@ -32,7 +32,7 @@ permalink: "index{{filter.all_players}}.html"
 
 
 			<div class="grid grid-cols-1 lg:grid-cols-8" id="all-players-table">
-			{% assign sorted_players = suggested_players | sort: "days_since_last_played" | reverse %}
+			{% assign sorted_players = suggested_players[filter.user] | sort: "days_since_last_played" | reverse %}
 			{% if filter.all_players == "all" %}
 				{% assign player_counts = (-1..-1) %}
 			{% else %}
@@ -204,27 +204,27 @@ permalink: "index{{filter.all_players}}.html"
 				<ul class="space-y-2">
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Average number of days since last played:</span>
-								<span class="font-semibold px-4">{{ metrics.average_days_since_last_played | round: 2 }}</span>
+								<span class="font-semibold px-4">{{ metrics[filter.user].average_days_since_last_played | round: 2 }}</span>
 						</li>
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Game that hasn't been played in the longest:</span>
-								<span class="font-semibold px-4 w-1/2">{{ metrics.game_played_latest }}</span>
+								<span class="font-semibold px-4 w-1/2">{{ metrics[filter.user].game_played_latest }}</span>
 						</li>
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Max days since last played:</span>
 								<div class="font-semibold px-4 w-1/2">
-									<span>{{ metrics.max_days_since_last_played }}</span>
-									<span class="text-slate-400 pl-2"> (- {{ metrics.gain_from_max_played | round: 2 }})</span>
+									<span>{{ metrics[filter.user].max_days_since_last_played }}</span>
+									<span class="text-slate-400 pl-2"> (- {{ metrics[filter.user].gain_from_max_played | round: 2 }})</span>
 								</div>
 						</li>
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Last game played:</span>
-								<span class="font-semibold px-4 w-1/2">{{ metrics.game_last_played }}</span>
+								<span class="font-semibold px-4 w-1/2">{{ metrics[filter.user].game_last_played }}</span>
 						</li>
 
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Number of games:</span>
-								<span class="font-semibold px-4 w-1/2">{{ metrics.num_games }}</span>
+								<span class="font-semibold px-4 w-1/2">{{ metrics[filter.user].num_games }}</span>
 						</li>
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Refreshed at:</span>
@@ -248,7 +248,7 @@ permalink: "index{{filter.all_players}}.html"
 
 		{% endfor %}
 
-			<a class="py-3 justify-center flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" href="indexall.html">
+			<a class="py-3 justify-center flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" href="{{ filter.user }}/indexall.html">
 				All
 			</a>
 
