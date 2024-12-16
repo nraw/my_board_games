@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 import pandas as pd
 from boardgamegeek import BGGClient
 from loguru import logger
@@ -15,6 +18,8 @@ from my_board_games.settings import conf
 
 def main():
     bgg = BGGClient()
+    all_suggested_players = {}
+    all_metrics = {}
     for user_name in conf["user_names"]:
         logger.info(f"Processing data for user: {user_name}")
         my_games = get_my_games(bgg, user_name)
@@ -44,10 +49,11 @@ def main():
         logger.info("Create metrics")
         metrics = get_metrics()
         logger.info("Obtained metrics")
+        all_suggested_players[user_name] = suggested_players.to_dict(orient="records")
+        all_metrics[user_name] = metrics
 
-        #  logger.info("Charting")
-        #  make_charts(suggested_players)
-        #  logger.info("Charted")
+    json.dump(all_suggested_players, open("data/suggested_players.json", "w"))
+    json.dump(all_metrics, open("data/metrics.json", "w"))
 
 
 def get_my_games(bgg, user_name) -> pd.DataFrame:
