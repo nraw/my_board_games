@@ -30,9 +30,9 @@ def get_suggested_players(games):
     #  suggested_players = pd.concat([suggested_players, extra_rows])
     suggested_players["playingtime"] = suggested_players["playingtime"].astype("int")
     #  suggested_players["cool_name"] = get_cool_names(suggested_players)
-    Path("data/suggested_players.json").write_text(
-        suggested_players.to_json(orient="records")
-    )
+    #  Path("data/suggested_players.json").write_text(
+    #      suggested_players.to_json(orient="records")
+    #  )
     return suggested_players
 
 

@@ -1,5 +1,5 @@
 conf = {
-    "user_name": "nraw",
+    "user_names": ["nraw"],
     "exclude_list": [
         161936,  # Pandemic Legacy S1
         221107,  # Pandemic Legacy S2

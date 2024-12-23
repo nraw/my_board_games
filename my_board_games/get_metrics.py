@@ -26,5 +26,5 @@ def get_metrics():
         max_days_since_last_played=max_days_since_last_played,
         gain_from_max_played=gain_from_max_played,
     )
-    json.dump(metrics, open("data/metrics.json", "w"))
+    #  json.dump(metrics, open("data/metrics.json", "w"))
     return metrics
