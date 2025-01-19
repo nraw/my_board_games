@@ -3,7 +3,7 @@ beautifulsoup4==4.11.1
 boardgamegeek2==1.0.1
 loguru==0.6.0
 numpy
-pandas==1.4.2
+pandas
 requests-cache==0.5.2
 requests==2.25.1
 tqdm==4.64.0
