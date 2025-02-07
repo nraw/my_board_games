@@ -38,7 +38,7 @@ jobs:
         run: make run
 
       - name: Upload data artifacts 🚀
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: data
           path: 'data'
@@ -53,7 +53,7 @@ jobs:
           sparse-checkout: '11ty_site'
 
       - name: Download artifacts 📂
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: data
           path: 11ty_site/_data
@@ -74,7 +74,7 @@ jobs:
 
 
       - name: Upload Page Artifact 🚀
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           name: github-pages
           path: 11ty_site/_site
