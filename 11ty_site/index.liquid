@@ -114,6 +114,7 @@ permalink: "index{{filter.all_players}}.html"
 							data-name="{{ game.name}}"
 							data-rating="{{ game.rating}}"
 							data-averageweight="{{ game.stats.averageweight }}"
+							data-average="{{ game.stats.average }}"
 							data-isbestplayer="{{ game.is_best_player }}"
 							data-numplays="{{ game.numplays}}"
 							data-playingtime="{{ game.playingtime}}"
@@ -257,7 +258,8 @@ permalink: "index{{filter.all_players}}.html"
 			data-[index='1']:text-blue-900
 			data-[index='2']:text-white
 			data-[index='3']:text-slate-600
-			data-[index='4']:text-purple-600
+			data-[index='4']:text-slate-200
+			data-[index='5']:text-purple-600
 			  bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" >
 					<i data-lucide="arrow-down-up"></i>
 			</div>
@@ -269,7 +271,7 @@ permalink: "index{{filter.all_players}}.html"
 
 // Get the container and the button
 const button = document.getElementById("reorder-button");
-const attributes = ['days', 'numplays', 'name', 'rating', 'size'];
+const attributes = ['days', 'numplays', 'name', 'rating', 'average', 'size'];
 const sort_category_element = document.getElementById("sort_category");
 
 
