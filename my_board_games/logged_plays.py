@@ -6,10 +6,9 @@ import requests
 from my_board_games.settings import conf
 
 
-def get_logged_plays():
-    username = conf["user_name"]
+def get_logged_plays(user_name):
     # API endpoint for retrieving plays data
-    url = f"https://www.boardgamegeek.com/xmlapi2/plays?username={username}&page="
+    url = f"https://www.boardgamegeek.com/xmlapi2/plays?username={user_name}&page="
 
     # Retrieve all pages of plays data
     page_num = 1
@@ -38,7 +37,7 @@ def get_logged_plays():
 
     # Create a Pandas DataFrame from the plays data
     logged_plays = pd.DataFrame(plays_list)
-    logged_plays['game_name'] = logged_plays['game_name'].apply(map_duplicates)
+    logged_plays["game_name"] = logged_plays["game_name"].apply(map_duplicates)
     return logged_plays
 
 
@@ -56,6 +55,7 @@ def get_days_since_last_played(games):
         pd.to_datetime("today") - games["last_played"]
     ).dt.days
     return games
+
 
 def map_duplicates(name):
     mapping = conf["mapping"]

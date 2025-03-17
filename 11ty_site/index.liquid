@@ -1,9 +1,9 @@
 ---
 pagination:
-  data: filters
+  data: suggested_players
   size: 1
-  alias: filter
-permalink: "index{{filter.all_players}}.html"
+  alias: current_user
+permalink: "/users/{{ current_user }}/index.html"
 ---
 <!doctype html>
 <html lang="en">
@@ -11,7 +11,7 @@ permalink: "index{{filter.all_players}}.html"
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title></title>
+	<title>{{ current_user }}'s Games</title>
 	<link href="{{'/style.css' | url }}" rel="stylesheet" />
 	 <style>
 				.hidden {
@@ -27,12 +27,24 @@ permalink: "index{{filter.all_players}}.html"
 </head>
 
 <body class="dark:bg-slate-800 dark:text-white">
+	<!-- User Navigation -->
+	<nav class="sticky top-0 z-30 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10">
+		<div class="flex justify-between items-center px-4 py-2">
+			<h1 class="text-lg font-bold">{{ current_user }}'s Games</h1>
+			<div class="flex space-x-4">
+				{% for user in users %}
+					<a href="/users/{{ user.username }}/index{% if filter.all_players %}{{filter.all_players}}{% endif %}.html" 
+						 class="px-3 py-1 rounded {% if user.username == current_user %}bg-blue-500 text-white{% endif %}">
+						{{ user.username }}
+					</a>
+				{% endfor %}
+			</div>
+		</div>
+	</nav>
+
 	<div class="" id="container">
-		<div class = "">
-
-
-			<div class="grid grid-cols-1 lg:grid-cols-8" id="all-players-table">
-			{% assign sorted_players = suggested_players | sort: "days_since_last_played" | reverse %}
+		<div class="grid grid-cols-1 lg:grid-cols-8" id="all-players-table">
+			{% assign sorted_players = suggested_players[current_user] | sort: "days_since_last_played" | reverse %}
 			{% if filter.all_players == "all" %}
 				{% assign player_counts = (-1..-1) %}
 			{% else %}
@@ -206,27 +218,27 @@ permalink: "index{{filter.all_players}}.html"
 				<ul class="space-y-2">
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Average number of days since last played:</span>
-								<span class="font-semibold px-4">{{ metrics.average_days_since_last_played | round: 2 }}</span>
+								<span class="font-semibold px-4">{{ metrics[current_user].average_days_since_last_played | round: 2 }}</span>
 						</li>
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Game that hasn't been played in the longest:</span>
-								<span class="font-semibold px-4 w-1/2">{{ metrics.game_played_latest }}</span>
+								<span class="font-semibold px-4 w-1/2">{{ metrics[current_user].game_played_latest }}</span>
 						</li>
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Max days since last played:</span>
 								<div class="font-semibold px-4 w-1/2">
-									<span>{{ metrics.max_days_since_last_played }}</span>
-									<span class="text-slate-400 pl-2"> (- {{ metrics.gain_from_max_played | round: 2 }})</span>
+									<span>{{ metrics[current_user].max_days_since_last_played }}</span>
+									<span class="text-slate-400 pl-2"> (- {{ metrics[current_user].gain_from_max_played | round: 2 }})</span>
 								</div>
 						</li>
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Last game played:</span>
-								<span class="font-semibold px-4 w-1/2">{{ metrics.game_last_played }}</span>
+								<span class="font-semibold px-4 w-1/2">{{ metrics[current_user].game_last_played }}</span>
 						</li>
 
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Number of games:</span>
-								<span class="font-semibold px-4 w-1/2">{{ metrics.num_games }}</span>
+								<span class="font-semibold px-4 w-1/2">{{ metrics[current_user].num_games }}</span>
 						</li>
 						<li class="flex items-center">
 								<span class="text-sm text-slate-400 w-1/2">Refreshed at:</span>
@@ -242,15 +254,15 @@ permalink: "index{{filter.all_players}}.html"
 
 		<!-- Players Menu -->
 		<div class="sticky bottom-0 grid grid-cols-10 grid-rows-1 z-10 w-full">
-		{% for player_count in (1..8) %}
+			{% for player_count in (1..8) %}
+				<a class="py-3 justify-center flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" 
+					href="{{ '/users/' | url }}{{ current_user }}#players-{{ player_count }}">
+					P{{ player_count }}
+				</a>
+			{% endfor %}
 
-			<a class="py-3 justify-center flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" href="{{"/#players-" | append: player_count |url}}">
-				P{{ player_count }}
-			</a>
-
-		{% endfor %}
-
-			<a class="py-3 justify-center flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" href="indexall.html">
+			<a class="py-3 justify-center flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" 
+				 href="/users/{{ current_user }}/indexall.html">
 				All
 			</a>
 
