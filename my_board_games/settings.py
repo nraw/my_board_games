@@ -11,5 +11,7 @@ conf = {
         "The Crew: Mission Deep Sea": "The Crew: The Quest for Planet Nine",
         "Welcome Back to the Dungeon": "Welcome to the Dungeon",
         "Tournament at Camelot": "Tournament at Avalon",
+        "Ascension Tactics: Inferno": "Ascension Tactics: Miniatures Deckbuilding Game",
+        "Mindbug: Beyond Evolution": "Mindbug: First Contact",
     },
 }
