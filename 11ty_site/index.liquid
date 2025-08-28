@@ -23,6 +23,17 @@ permalink: "index{{filter.all_players}}.html"
             color: white;
             transition: background-color 0.3s ease;
         }
+        /* Active player filter button styles */
+        .player-filter-btn[data-active="true"] {
+            background-color: #2563eb !important; /* blue-600 */
+            color: white !important;
+            border-color: #1d4ed8 !important; /* blue-700 */
+        }
+        .dark .player-filter-btn[data-active="true"] {
+            background-color: #1d4ed8 !important; /* blue-700 */
+            color: white !important;
+            border-color: #1e40af !important; /* blue-800 */
+        }
 	</style>
 </head>
 
@@ -31,7 +42,11 @@ permalink: "index{{filter.all_players}}.html"
 		<div class = "">
 
 
+			{% if filter.all_players == "all" %}
+			<div class="grid grid-cols-1" id="all-players-table">
+			{% else %}
 			<div class="grid grid-cols-1 lg:grid-cols-8" id="all-players-table">
+			{% endif %}
 			{% assign sorted_players = suggested_players | sort: "days_since_last_played" | reverse %}
 			{% if filter.all_players == "all" %}
 				{% assign player_counts = (-1..-1) %}
@@ -244,9 +259,11 @@ permalink: "index{{filter.all_players}}.html"
 		<div class="sticky bottom-0 grid grid-cols-10 grid-rows-1 z-10 w-full">
 		{% for player_count in (1..8) %}
 
-			<a class="py-3 justify-center flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10" href="{{"/#players-" | append: player_count |url}}">
+			<button class="player-filter-btn py-3 justify-center flex items-center font-semibold text-sm text-slate-900 dark:text-slate-200 bg-slate-50/90 dark:bg-slate-700/90 backdrop-blur-sm ring-1 ring-slate-900/10 dark:ring-black/10 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" 
+				data-player-count="{{ player_count }}"
+				data-active="false">
 				P{{ player_count }}
-			</a>
+			</button>
 
 		{% endfor %}
 
@@ -511,6 +528,94 @@ filterBestPlayer();
             game.addEventListener('touchstart', handleTouchStart, false);
             game.addEventListener('touchend', handleTouchEnd, false);
         });
+	</script>
+	<script>
+		// Player count filtering functionality
+		let activePlayerCounts = new Set();
+
+		// Get all player filter buttons
+		const playerFilterBtns = document.querySelectorAll('.player-filter-btn');
+
+		// Add event listeners to player filter buttons
+		playerFilterBtns.forEach(btn => {
+			btn.addEventListener('click', function(e) {
+				e.preventDefault();
+				const playerCount = parseInt(this.getAttribute('data-player-count'));
+				const isActive = this.getAttribute('data-active') === 'true';
+
+				if (isActive) {
+					// Deactivate this button
+					this.setAttribute('data-active', 'false');
+					activePlayerCounts.delete(playerCount);
+				} else {
+					// Activate this button
+					this.setAttribute('data-active', 'true');
+					activePlayerCounts.add(playerCount);
+				}
+
+				applyPlayerCountFilter();
+			});
+		});
+
+		function clearAllPlayerFilters() {
+			playerFilterBtns.forEach(btn => {
+				btn.setAttribute('data-active', 'false');
+			});
+			activePlayerCounts.clear();
+		}
+
+		function showAllGames() {
+			const allGames = document.querySelectorAll('.sortable');
+			allGames.forEach(game => {
+				game.style.display = '';
+			});
+		}
+
+		function applyPlayerCountFilter() {
+			const allGames = document.querySelectorAll('.sortable');
+
+			if (activePlayerCounts.size === 0) {
+				// No filters active, show all games
+				showAllGames();
+				return;
+			}
+
+			// Group games by name to implement AND logic
+			const gamesByName = {};
+			allGames.forEach(game => {
+				const gameName = game.getAttribute('data-name');
+				const playerCount = parseInt(game.closest('[id^="magic-"]').id.split('-')[1]);
+				
+				if (!gamesByName[gameName]) {
+					gamesByName[gameName] = {
+						elements: [],
+						playerCounts: new Set()
+					};
+				}
+				
+				gamesByName[gameName].elements.push(game);
+				gamesByName[gameName].playerCounts.add(playerCount);
+			});
+
+			// Apply AND logic: show games that support ALL selected player counts
+			Object.keys(gamesByName).forEach(gameName => {
+				const gameData = gamesByName[gameName];
+				
+				// Check if this game supports all selected player counts
+				const supportsAllSelectedCounts = Array.from(activePlayerCounts).every(count => 
+					gameData.playerCounts.has(count)
+				);
+
+				// Show/hide all instances of this game
+				gameData.elements.forEach(gameElement => {
+					if (supportsAllSelectedCounts) {
+						gameElement.style.display = '';
+					} else {
+						gameElement.style.display = 'none';
+					}
+				});
+			});
+		}
 	</script>
 </body>
 
