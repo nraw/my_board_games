@@ -140,79 +140,76 @@ permalink: "index{{filter.all_players}}.html"
 							data-players="{{ game.players }}"
 							data-thumbnail="{{ game.thumbnail }}"
 							>
-							<div class="flex gap-2">
+							<div class="flex gap-3">
 								<!-- Thumbnail -->
 								{% if game.thumbnail %}
 								<img src="{{ game.thumbnail }}" 
 									alt="{{ game.name }}" 
-									class="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+									class="w-14 h-14 rounded-lg object-cover flex-shrink-0"
 									loading="lazy">
 								{% endif %}
 								
 								<!-- Content area -->
-								<div class="flex-1 min-w-0">
-									<div class="flex justify-between">
-										<div class="truncate">
-											{% if game.is_best_player %}
-											🔸
-											{% endif %}
-
-											{{ game.name }}
-											<span class="inline-flex text-gray-300 dark:text-slate-600 items-center">
-												<span>- {{ game.rating }}</span>
-												<i data-lucide="star" class='w-3 m-0'></i>
-											</span>
-										</div>
-										<div class='flex'>
-
-									<!-- Speed icon -->
-									{% if game.playingtime < 21 %}
-									<i data-lucide="rabbit" class='px-1'></i>
-									{% elsif game.playingtime < 90 %}
-									<!-- <i data-lucide="turtle" class='px-1'></i> -->
-									{% else %}
-									<i data-lucide="snail" class='px-1'></i>
-									{% endif %}
-									<!-- End Speeed icon -->
-
-									<!-- Weight icon -->
-									{% if game.stats.averageweight < 1.5 %}
-									<i data-lucide="feather" class='px-1'></i>
-									{% elsif game.stats.averageweight < 2.1 %}
-									<!-- <i data-lucide="dumbbell" class='px-1'></i> -->
-									{% elsif game.stats.averageweight < 5 %}
-									<i data-lucide="dumbbell" class='px-1'></i>
-									{% endif %}
-									<!-- End Weight icon -->
-
-									<!-- Numplays -->
-									{% if game.numplays > 0 %}
-										{% assign numplays_colors = "bg-blue-100 dark:bg-blue-900" %}
-									{% else %}
-										{% assign numplays_colors = "bg-red-100 dark:bg-red-700" %}
-									{% endif %}
-									<div class="{{ numplays_colors }} rounded-full px-2 text-center">
-										{{ game.numplays }}<span class='text-xs'>x</span>
-									</div>	
-									<!-- End Numplays -->
-
+								<div class="flex-1 min-w-0 space-y-1">
+									<!-- Row 1: Title -->
+									<div class="truncate">
+										{{ game.name }}
 									</div>
 									
-								</div>
-								<!-- Progress -->
-								{% if days_since > 359 %}
-									{% assign days_colors = "bg-red-600 dark:bg-red-500" %}
-								{% else %}
-									{% assign days_colors = "bg-blue-600 dark:bg-blue-500" %}
-								{% endif %}
-								<div class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700 relative" role="progressbar" aria-valuenow="{{ days_since | divided_by: 3.6}}" aria-valuemin="0" aria-valuemax="100">
-										<div class="{{ days_colors }} flex flex-col justify-center rounded-full overflow-hidden text-xs text-white text-center whitespace-nowrap transition duration-500" style="width: {{ days_since | divided_by: 3.6}}%"></div>
-										{% for i in (1..12) %}
-												<div class="absolute h-full bg-neutral-700 z-0" style="width: 4px; left: {{ i | times: 8.33 }}%;"></div>
-												<div class="absolute h-full bg-gray-500" style="width: 1px; left: {{ i | times: 8.33 }}%;"></div>
-										{% endfor %}
-								</div>
-								<!-- End Progress -->
+									<!-- Row 2: Metadata -->
+									<div class="flex justify-between items-center">
+										<!-- Rating (left aligned) -->
+										<span class="inline-flex text-gray-600 dark:text-slate-400 items-center">
+											<span>{{ game.rating }}</span>
+											<i data-lucide="star" class='w-3 ml-0.5'></i>
+										</span>
+										
+										<!-- Other metadata (right aligned) -->
+										<div class="flex items-center space-x-2">
+											<!-- Best player indicator -->
+											{% if game.is_best_player %}
+											<span class="text-sm">🔸</span>
+											{% endif %}
+											
+											<!-- Speed icon -->
+											{% if game.playingtime < 21 %}
+											<i data-lucide="rabbit" class='w-3 h-3'></i>
+											{% elsif game.playingtime >= 90 %}
+											<i data-lucide="snail" class='w-3 h-3'></i>
+											{% endif %}
+											
+											<!-- Weight icon -->
+											{% if game.stats.averageweight < 1.5 %}
+											<i data-lucide="feather" class='w-3 h-3'></i>
+											{% elsif game.stats.averageweight >= 2.1 %}
+											<i data-lucide="dumbbell" class='w-3 h-3'></i>
+											{% endif %}
+											
+											<!-- Numplays -->
+											{% if game.numplays > 0 %}
+												{% assign numplays_colors = "bg-blue-100 dark:bg-blue-900" %}
+											{% else %}
+												{% assign numplays_colors = "bg-red-100 dark:bg-red-700" %}
+											{% endif %}
+											<div class="{{ numplays_colors }} rounded-full px-2 py-0.5 text-xs text-center">
+												{{ game.numplays }}<span class='text-xs'>x</span>
+											</div>
+										</div>
+									</div>
+									
+									<!-- Row 3: Progress -->
+									{% if days_since > 359 %}
+										{% assign days_colors = "bg-red-600 dark:bg-red-500" %}
+									{% else %}
+										{% assign days_colors = "bg-blue-600 dark:bg-blue-500" %}
+									{% endif %}
+									<div class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700 relative" role="progressbar" aria-valuenow="{{ days_since | divided_by: 3.6}}" aria-valuemin="0" aria-valuemax="100">
+											<div class="{{ days_colors }} flex flex-col justify-center rounded-full overflow-hidden text-xs text-white text-center whitespace-nowrap transition duration-500" style="width: {{ days_since | divided_by: 3.6}}%"></div>
+											{% for i in (1..12) %}
+													<div class="absolute h-full bg-neutral-700 z-0" style="width: 4px; left: {{ i | times: 8.33 }}%;"></div>
+													<div class="absolute h-full bg-gray-500" style="width: 1px; left: {{ i | times: 8.33 }}%;"></div>
+											{% endfor %}
+									</div>
 								</div>
 							</div>
 						</a>
