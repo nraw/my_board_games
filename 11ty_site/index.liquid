@@ -138,30 +138,32 @@ permalink: "index{{filter.all_players}}.html"
 							data-size="{{ game.size }}"
 							data-url="{{ game.url }}"
 							data-players="{{ game.players }}"
+							data-thumbnail="{{ game.thumbnail }}"
 							>
-							<div class="flex justify-between">
-
-								<div class="flex items-center space-x-2 truncate">
+							<div class="flex gap-2">
+								<!-- Thumbnail -->
 								{% if game.thumbnail %}
-									<img src="{{ game.thumbnail }}" 
-										alt="{{ game.name }}" 
-										class="w-6 h-6 rounded-full object-cover flex-shrink-0"
-										loading="lazy">
+								<img src="{{ game.thumbnail }}" 
+									alt="{{ game.name }}" 
+									class="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+									loading="lazy">
 								{% endif %}
 								
-								<div class="truncate">
-									{% if game.is_best_player %}
-									🔸
-									{% endif %}
+								<!-- Content area -->
+								<div class="flex-1 min-w-0">
+									<div class="flex justify-between">
+										<div class="truncate">
+											{% if game.is_best_player %}
+											🔸
+											{% endif %}
 
-									{{ game.name }}
-									<span class="inline-flex text-gray-300 dark:text-slate-600 items-center">
-										<span>- {{ game.rating }}</span>
-										<i data-lucide="star" class='w-3 m-0'></i>
-									</span>
-								</div>
-								</div>
-								<div class='flex'>
+											{{ game.name }}
+											<span class="inline-flex text-gray-300 dark:text-slate-600 items-center">
+												<span>- {{ game.rating }}</span>
+												<i data-lucide="star" class='w-3 m-0'></i>
+											</span>
+										</div>
+										<div class='flex'>
 
 									<!-- Speed icon -->
 									{% if game.playingtime < 21 %}
@@ -194,23 +196,25 @@ permalink: "index{{filter.all_players}}.html"
 									</div>	
 									<!-- End Numplays -->
 
+									</div>
+									
 								</div>
-								
+								<!-- Progress -->
+								{% if days_since > 359 %}
+									{% assign days_colors = "bg-red-600 dark:bg-red-500" %}
+								{% else %}
+									{% assign days_colors = "bg-blue-600 dark:bg-blue-500" %}
+								{% endif %}
+								<div class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700 relative" role="progressbar" aria-valuenow="{{ days_since | divided_by: 3.6}}" aria-valuemin="0" aria-valuemax="100">
+										<div class="{{ days_colors }} flex flex-col justify-center rounded-full overflow-hidden text-xs text-white text-center whitespace-nowrap transition duration-500" style="width: {{ days_since | divided_by: 3.6}}%"></div>
+										{% for i in (1..12) %}
+												<div class="absolute h-full bg-neutral-700 z-0" style="width: 4px; left: {{ i | times: 8.33 }}%;"></div>
+												<div class="absolute h-full bg-gray-500" style="width: 1px; left: {{ i | times: 8.33 }}%;"></div>
+										{% endfor %}
+								</div>
+								<!-- End Progress -->
+								</div>
 							</div>
-							<!-- Progress -->
-							{% if days_since > 359 %}
-								{% assign days_colors = "bg-red-600 dark:bg-red-500" %}
-							{% else %}
-								{% assign days_colors = "bg-blue-600 dark:bg-blue-500" %}
-							{% endif %}
-							<div class="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700 relative" role="progressbar" aria-valuenow="{{ days_since | divided_by: 3.6}}" aria-valuemin="0" aria-valuemax="100">
-									<div class="{{ days_colors }} flex flex-col justify-center rounded-full overflow-hidden text-xs text-white text-center whitespace-nowrap transition duration-500" style="width: {{ days_since | divided_by: 3.6}}%"></div>
-									{% for i in (1..12) %}
-											<div class="absolute h-full bg-neutral-700 z-0" style="width: 4px; left: {{ i | times: 8.33 }}%;"></div>
-											<div class="absolute h-full bg-gray-500" style="width: 1px; left: {{ i | times: 8.33 }}%;"></div>
-									{% endfor %}
-							</div>
-							<!-- End Progress -->
 						</a>
 						{% endif %} 
 						{% endfor %}
@@ -313,7 +317,12 @@ permalink: "index{{filter.all_players}}.html"
 				</div>
 				
 				<!-- Modal content -->
-				<div class="space-y-4">
+				<div class="flex gap-4">
+					<!-- Thumbnail -->
+					<img id="modal-thumbnail" src="" alt="" class="w-20 h-20 rounded-lg object-cover flex-shrink-0 hidden">
+					
+					<!-- Content area -->
+					<div class="flex-1 space-y-4">
 					<!-- Game stats -->
 					<div class="grid grid-cols-2 gap-4 text-sm">
 						<div>
@@ -360,6 +369,7 @@ permalink: "index{{filter.all_players}}.html"
 							<span class="text-xl mr-2">🔸</span>
 							<span class="text-blue-800 dark:text-blue-200 font-medium">Best at this player count!</span>
 						</div>
+					</div>
 					</div>
 				</div>
 				
@@ -647,6 +657,12 @@ filterBestPlayer();
 				}
 
 				applyPlayerCountFilter();
+				
+				// Also scroll to the player section
+				const playerSection = document.getElementById(`players-${playerCount}`);
+				if (playerSection) {
+					playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}
 			});
 		});
 
@@ -719,6 +735,7 @@ filterBestPlayer();
 		
 		// Modal elements for content
 		const modalTitle = document.getElementById('modal-title');
+		const modalThumbnail = document.getElementById('modal-thumbnail');
 		const modalRating = document.getElementById('modal-rating');
 		const modalNumplays = document.getElementById('modal-numplays');
 		const modalPlayers = document.getElementById('modal-players');
@@ -752,11 +769,21 @@ filterBestPlayer();
 				average: gameCard.dataset.average,
 				days: gameCard.dataset.days,
 				url: gameCard.dataset.url,
+				thumbnail: gameCard.dataset.thumbnail,
 				isbestplayer: gameCard.dataset.isbestplayer === 'true'
 			};
 
 			// Populate modal content
 			modalTitle.textContent = gameData.name;
+			
+			// Handle thumbnail
+			if (gameData.thumbnail && gameData.thumbnail !== 'undefined') {
+				modalThumbnail.src = gameData.thumbnail;
+				modalThumbnail.alt = gameData.name;
+				modalThumbnail.classList.remove('hidden');
+			} else {
+				modalThumbnail.classList.add('hidden');
+			}
 			modalRating.textContent = gameData.rating || '-';
 			modalNumplays.textContent = gameData.numplays || '0';
 			modalPlayers.textContent = gameData.players || '-';
