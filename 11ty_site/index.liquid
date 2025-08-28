@@ -125,7 +125,7 @@ permalink: "index{{filter.all_players}}.html"
 
 						{% if game.players ==player_count or player_count == -1%}
 						{% assign days_since = game.days_since_last_played | at_most: 360 %}
-						<a class="shadow p-1 mx-2 my-1 text-sm rounded sortable" target=”_blank” href="{{ game.url }}" 
+						<a class="shadow p-1 mx-2 my-1 text-sm rounded sortable game-card" href="#" 
 							data-name="{{ game.name}}"
 							data-rating="{{ game.rating}}"
 							data-averageweight="{{ game.stats.averageweight }}"
@@ -136,6 +136,8 @@ permalink: "index{{filter.all_players}}.html"
 							data-playingtime="{{ game.playingtime}}"
 							data-days="{{ game.days_since_last_played}}"
 							data-size="{{ game.size }}"
+							data-url="{{ game.url }}"
+							data-players="{{ game.players }}"
 							>
 							<div class="flex justify-between">
 
@@ -284,6 +286,91 @@ permalink: "index{{filter.all_players}}.html"
 		</div>
 		<!-- End Players Menu -->
 	</div>
+
+	<!-- Game Details Modal -->
+	<div id="game-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-hidden="true">
+		<div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+			<!-- Background overlay -->
+			<div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80" aria-hidden="true"></div>
+			
+			<!-- Modal panel -->
+			<div class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+				<!-- Modal header -->
+				<div class="flex justify-between items-start mb-4">
+					<h3 id="modal-title" class="text-lg font-medium text-gray-900 dark:text-white pr-4">
+						Game Title
+					</h3>
+					<button id="modal-close" type="button" class="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100 flex-shrink-0">
+						<span class="sr-only">Close</span>
+						<i data-lucide="x" class="w-6 h-6"></i>
+					</button>
+				</div>
+				
+				<!-- Modal content -->
+				<div class="space-y-4">
+					<!-- Game stats -->
+					<div class="grid grid-cols-2 gap-4 text-sm">
+						<div>
+							<span class="text-gray-500 dark:text-gray-400">Your Rating:</span>
+							<span id="modal-rating" class="font-medium ml-2">-</span>
+							<i data-lucide="star" class='w-3 inline ml-1'></i>
+						</div>
+						<div>
+							<span class="text-gray-500 dark:text-gray-400">Plays:</span>
+							<span id="modal-numplays" class="font-medium ml-2">0</span>
+						</div>
+						<div>
+							<span class="text-gray-500 dark:text-gray-400">Players:</span>
+							<span id="modal-players" class="font-medium ml-2">-</span>
+						</div>
+						<div>
+							<span class="text-gray-500 dark:text-gray-400">Playing Time:</span>
+							<span id="modal-playtime" class="font-medium ml-2">-</span> min
+						</div>
+						<div>
+							<span class="text-gray-500 dark:text-gray-400">Weight:</span>
+							<span id="modal-weight" class="font-medium ml-2">-</span>/5
+						</div>
+						<div>
+							<span class="text-gray-500 dark:text-gray-400">BGG Rating:</span>
+							<span id="modal-average" class="font-medium ml-2">-</span>
+						</div>
+					</div>
+					
+					<!-- Days since last played indicator -->
+					<div class="space-y-2">
+						<div class="flex justify-between text-sm">
+							<span class="text-gray-500 dark:text-gray-400">Last Played:</span>
+							<span id="modal-days" class="font-medium">- days ago</span>
+						</div>
+						<div id="modal-progress" class="flex w-full h-2 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700 relative">
+							<div id="modal-progress-bar" class="bg-blue-600 dark:bg-blue-500 flex flex-col justify-center rounded-full overflow-hidden transition duration-500" style="width: 0%"></div>
+						</div>
+					</div>
+					
+					<!-- Best player indicator -->
+					<div id="modal-best-player" class="hidden bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3 text-sm">
+						<div class="flex items-center">
+							<span class="text-xl mr-2">🔸</span>
+							<span class="text-blue-800 dark:text-blue-200 font-medium">Best at this player count!</span>
+						</div>
+					</div>
+				</div>
+				
+				<!-- Modal footer -->
+				<div class="mt-6 flex flex-col sm:flex-row gap-3">
+					<a id="modal-bgg-link" href="#" target="_blank" class="inline-flex justify-center items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors">
+						<i data-lucide="external-link" class="w-4 h-4 mr-2"></i>
+						View on BoardGameGeek
+					</a>
+					<button id="modal-cancel" type="button" class="inline-flex justify-center items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-md transition-colors">
+						Close
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- End Game Details Modal -->
 
 	<script>
 
@@ -616,6 +703,124 @@ filterBestPlayer();
 				});
 			});
 		}
+	</script>
+	<script>
+		// Game Details Modal functionality
+		const modal = document.getElementById('game-modal');
+		const modalOverlay = modal.querySelector('.fixed.inset-0.transition-opacity');
+		const modalClose = document.getElementById('modal-close');
+		const modalCancel = document.getElementById('modal-cancel');
+		
+		// Modal elements for content
+		const modalTitle = document.getElementById('modal-title');
+		const modalRating = document.getElementById('modal-rating');
+		const modalNumplays = document.getElementById('modal-numplays');
+		const modalPlayers = document.getElementById('modal-players');
+		const modalPlaytime = document.getElementById('modal-playtime');
+		const modalWeight = document.getElementById('modal-weight');
+		const modalAverage = document.getElementById('modal-average');
+		const modalDays = document.getElementById('modal-days');
+		const modalProgressBar = document.getElementById('modal-progress-bar');
+		const modalBestPlayer = document.getElementById('modal-best-player');
+		const modalBggLink = document.getElementById('modal-bgg-link');
+
+		// Add click listeners to all game cards
+		function addGameCardListeners() {
+			document.querySelectorAll('.game-card').forEach(card => {
+				card.addEventListener('click', function(e) {
+					e.preventDefault();
+					showGameModal(this);
+				});
+			});
+		}
+
+		// Show modal with game details
+		function showGameModal(gameCard) {
+			const gameData = {
+				name: gameCard.dataset.name,
+				rating: gameCard.dataset.rating,
+				numplays: gameCard.dataset.numplays,
+				players: gameCard.dataset.players,
+				playingtime: gameCard.dataset.playingtime,
+				averageweight: gameCard.dataset.averageweight,
+				average: gameCard.dataset.average,
+				days: gameCard.dataset.days,
+				url: gameCard.dataset.url,
+				isbestplayer: gameCard.dataset.isbestplayer === 'true'
+			};
+
+			// Populate modal content
+			modalTitle.textContent = gameData.name;
+			modalRating.textContent = gameData.rating || '-';
+			modalNumplays.textContent = gameData.numplays || '0';
+			modalPlayers.textContent = gameData.players || '-';
+			modalPlaytime.textContent = gameData.playingtime || '-';
+			modalWeight.textContent = gameData.averageweight ? parseFloat(gameData.averageweight).toFixed(1) : '-';
+			modalAverage.textContent = gameData.average ? parseFloat(gameData.average).toFixed(1) : '-';
+			modalBggLink.href = gameData.url || '#';
+
+			// Handle days since last played
+			const daysSince = parseInt(gameData.days) || 0;
+			const daysLimit = Math.min(daysSince, 360);
+			const progressPercent = (daysLimit / 3.6);
+			
+			modalDays.textContent = daysSince > 359 ? '360+ days ago' : `${daysSince} days ago`;
+			modalProgressBar.style.width = `${progressPercent}%`;
+			modalProgressBar.className = daysSince > 359 
+				? 'bg-red-600 dark:bg-red-500 flex flex-col justify-center rounded-full overflow-hidden transition duration-500'
+				: 'bg-blue-600 dark:bg-blue-500 flex flex-col justify-center rounded-full overflow-hidden transition duration-500';
+
+			// Show/hide best player indicator
+			if (gameData.isbestplayer) {
+				modalBestPlayer.classList.remove('hidden');
+			} else {
+				modalBestPlayer.classList.add('hidden');
+			}
+
+			// Show modal
+			modal.classList.remove('hidden');
+			modal.setAttribute('aria-hidden', 'false');
+			document.body.style.overflow = 'hidden';
+			
+			// Focus management
+			modalClose.focus();
+		}
+
+		// Hide modal
+		function hideGameModal() {
+			modal.classList.add('hidden');
+			modal.setAttribute('aria-hidden', 'true');
+			document.body.style.overflow = '';
+		}
+
+		// Event listeners for closing modal
+		modalClose.addEventListener('click', hideGameModal);
+		modalCancel.addEventListener('click', hideGameModal);
+		modalOverlay.addEventListener('click', hideGameModal);
+
+		// Keyboard navigation
+		modal.addEventListener('keydown', function(e) {
+			if (e.key === 'Escape') {
+				hideGameModal();
+			}
+		});
+
+		// Initialize modal functionality
+		addGameCardListeners();
+		
+		// Re-add listeners when DOM changes (for sorting/filtering)
+		const observer = new MutationObserver(function(mutations) {
+			mutations.forEach(function(mutation) {
+				if (mutation.type === 'childList') {
+					addGameCardListeners();
+				}
+			});
+		});
+		
+		// Observe changes to game containers
+		document.querySelectorAll('.sorting_container').forEach(container => {
+			observer.observe(container, { childList: true });
+		});
 	</script>
 </body>
 
