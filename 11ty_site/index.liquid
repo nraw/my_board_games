@@ -141,19 +141,25 @@ permalink: "index{{filter.all_players}}.html"
 							>
 							<div class="flex justify-between">
 
-								<div class="truncate">
-
-								{% if game.is_best_player %}
-								🔸
+								<div class="flex items-center space-x-2 truncate">
+								{% if game.thumbnail %}
+									<img src="{{ game.thumbnail }}" 
+										alt="{{ game.name }}" 
+										class="w-6 h-6 rounded-full object-cover flex-shrink-0"
+										loading="lazy">
 								{% endif %}
+								
+								<div class="truncate">
+									{% if game.is_best_player %}
+									🔸
+									{% endif %}
 
-								{{ game.name }}
-								<span class="inline-flex text-gray-300 dark:text-slate-600 items-center">
-									<span>- {{ game.rating }}</span>
-									<i data-lucide="star" class='w-3 m-0'></i>
-
-								</span>
-
+									{{ game.name }}
+									<span class="inline-flex text-gray-300 dark:text-slate-600 items-center">
+										<span>- {{ game.rating }}</span>
+										<i data-lucide="star" class='w-3 m-0'></i>
+									</span>
+								</div>
 								</div>
 								<div class='flex'>
 
