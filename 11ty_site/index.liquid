@@ -304,7 +304,7 @@ permalink: "index{{filter.all_players}}.html"
 	<div id="game-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-hidden="true">
 		<div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
 			<!-- Background overlay -->
-			<div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80" aria-hidden="true"></div>
+			<div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80"></div>
 			
 			<!-- Modal panel -->
 			<div class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
@@ -796,19 +796,22 @@ applyAllFilters();
 				modalBestPlayer.classList.add('hidden');
 			}
 
-			// Show modal
-			modal.classList.remove('hidden');
+			// Show modal - set aria-hidden before removing hidden class
 			modal.setAttribute('aria-hidden', 'false');
+			modal.classList.remove('hidden');
 			document.body.style.overflow = 'hidden';
 			
-			// Focus management
-			modalClose.focus();
+			// Focus management - use setTimeout to ensure DOM is updated
+			setTimeout(() => {
+				modalClose.focus();
+			}, 0);
 		}
 
 		// Hide modal
 		function hideGameModal() {
-			modal.classList.add('hidden');
+			// Set aria-hidden before adding hidden class
 			modal.setAttribute('aria-hidden', 'true');
+			modal.classList.add('hidden');
 			document.body.style.overflow = '';
 		}
 
