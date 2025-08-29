@@ -131,7 +131,7 @@ permalink: "index{{filter.all_players}}.html"
 
 						{% if game.players ==player_count or player_count == -1%}
 						{% assign days_since = game.days_since_last_played | at_most: 360 %}
-						<a class="shadow p-1 mx-2 my-1 text-sm rounded sortable game-card" href="#" 
+						<a class="shadow p-1 mx-2 my-1 text-sm rounded sortable game-card" href="{{ game.url }}" target="_blank" 
 							data-name="{{ game.name}}"
 							data-rating="{{ game.rating}}"
 							data-averageweight="{{ game.stats.averageweight }}"
@@ -735,12 +735,15 @@ applyAllFilters();
 
 		// Add click listeners to all game cards
 		function addGameCardListeners() {
+			// Temporarily disabled - let links go to BGG directly
+			/*
 			document.querySelectorAll('.game-card').forEach(card => {
 				card.addEventListener('click', function(e) {
 					e.preventDefault();
 					showGameModal(this);
 				});
 			});
+			*/
 		}
 
 		// Show modal with game details
