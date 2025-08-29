@@ -404,7 +404,7 @@ button.addEventListener("click", reorderDivs);
 sort_category_element.innerHTML = attributes[0];
 
 // Function to reorder the divs
-function reorderDivs() {
+function reorderDivs(skipCycle = false) {
 	// Get all the divs in the container
 	{% comment %} const container = document.getElementById("magic-2"); {% endcomment %}
 
@@ -413,7 +413,7 @@ function reorderDivs() {
 
 
 	let attributeValue = parseInt(button.dataset.index, 10) || 0;
-	const attributeIndex = (attributeValue + 1) % attributes.length
+	const attributeIndex = skipCycle ? attributeValue : (attributeValue + 1) % attributes.length
 	const attribute = attributes[attributeIndex]
 	
 	containers.forEach(container => {
@@ -448,18 +448,86 @@ function reorderDivs() {
 	});
 	button.dataset.index = attributeIndex;
 	sort_category_element.innerHTML = attribute;
+	if (!skipCycle) {
+		updateURL();
+	}
 }
 	</script>
 	<script>
+// URL state management functions
+function getFiltersFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const filters = {};
+    
+    // Get filter states from URL parameters
+    ['short', 'long', 'light', 'heavy', 'bestPlayer', 'selected'].forEach(filter => {
+        const value = params.get(filter);
+        if (value && ['none', 'include', 'exclude'].includes(value)) {
+            filters[filter] = value;
+        } else {
+            filters[filter] = 'none';
+        }
+    });
+    
+    // Get sort and player filters
+    const sort = params.get('sort');
+    if (sort && sort >= 0 && sort < attributes.length) {
+        filters.sort = parseInt(sort);
+    }
+    
+    const players = params.get('players');
+    if (players) {
+        filters.players = players.split(',').map(p => parseInt(p)).filter(p => p >= 1 && p <= 8);
+    } else {
+        filters.players = [];
+    }
+    
+    // Get selected games
+    const selectedGames = params.get('selectedGames');
+    if (selectedGames) {
+        filters.selectedGames = selectedGames.split(',').filter(name => name.trim().length > 0);
+    } else {
+        filters.selectedGames = [];
+    }
+    
+    return filters;
+}
+
+function updateURL() {
+    const params = new URLSearchParams();
+    
+    // Add filter states to URL
+    Object.keys(filterState).forEach(filter => {
+        if (filterState[filter] !== 'none') {
+            params.set(filter, filterState[filter]);
+        }
+    });
+    
+    // Add sort state
+    const sortIndex = parseInt(document.getElementById("reorder-button").dataset.index || 0);
+    if (sortIndex !== 0) {
+        params.set('sort', sortIndex);
+    }
+    
+    // Add active player counts
+    if (activePlayerCounts.size > 0) {
+        params.set('players', Array.from(activePlayerCounts).sort().join(','));
+    }
+    
+    // Add selected games
+    const selectedGames = Array.from(document.querySelectorAll('.sortable.selected')).map(game => game.dataset.name);
+    const uniqueSelectedGames = [...new Set(selectedGames)];
+    if (uniqueSelectedGames.length > 0) {
+        params.set('selectedGames', uniqueSelectedGames.join(','));
+    }
+    
+    // Update URL without page reload
+    const newURL = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+    window.history.replaceState({}, '', newURL);
+}
+
 // Filter state management system
-const filterState = {
-    short: 'none',
-    long: 'none', 
-    light: 'none',
-    heavy: 'none',
-    bestPlayer: 'none',
-    selected: 'none'
-};
+const filterState = getFiltersFromURL();
 
 const HIDE_CLASS = 'hidden';
 
@@ -519,10 +587,43 @@ function toggleFilter(filterType) {
     });
     
     applyAllFilters();
+    updateURL();
 }
 
 // Initialize filter system
 function initializeFilterSystem() {
+    // Set initial filter button states from URL
+    Object.keys(filterState).forEach(filterType => {
+        if (filterState[filterType] !== 'none') {
+            const buttons = document.querySelectorAll(`[data-filter-type="${filterType}"]`);
+            buttons.forEach(button => {
+                button.setAttribute('data-filter-state', filterState[filterType]);
+            });
+        }
+    });
+    
+    // Initialize sort state from URL
+    const urlFilters = getFiltersFromURL();
+    if (urlFilters.sort !== undefined) {
+        const button = document.getElementById("reorder-button");
+        button.dataset.index = urlFilters.sort;
+        sort_category_element.innerHTML = attributes[urlFilters.sort];
+        
+        // Apply the sorting without cycling to next attribute
+        reorderDivs(true);
+    }
+    
+    // Initialize selected games from URL
+    if (urlFilters.selectedGames && urlFilters.selectedGames.length > 0) {
+        urlFilters.selectedGames.forEach(gameName => {
+            const gameElements = document.querySelectorAll(`.sortable[data-name="${gameName}"]`);
+            gameElements.forEach(element => {
+                element.classList.add('selected');
+            });
+        });
+        showSelectedButtons();
+    }
+    
     // Get all filter buttons and add event listeners
     const filterButtons = document.querySelectorAll('.filter-btn[data-filter-type]');
     
@@ -533,6 +634,9 @@ function initializeFilterSystem() {
             toggleFilter(filterType);
         });
     });
+    
+    // Apply initial filters
+    applyAllFilters();
 }
 
 // Initialize the system
@@ -611,6 +715,7 @@ applyAllFilters();
             
             // Reapply filters after selection changes
             applyAllFilters();
+            updateURL();
         }
 
         document.querySelectorAll('.sortable').forEach(game => {
@@ -619,11 +724,20 @@ applyAllFilters();
         });
 	</script>
 	<script>
-		// Player count filtering functionality
-		let activePlayerCounts = new Set();
+		// Player count filtering functionality  
+		const urlFilters = getFiltersFromURL();
+		let activePlayerCounts = new Set(urlFilters.players || []);
 
 		// Get all player filter buttons
 		const playerFilterBtns = document.querySelectorAll('.player-filter-btn');
+
+		// Initialize player filter buttons from URL state
+		playerFilterBtns.forEach(btn => {
+			const playerCount = parseInt(btn.getAttribute('data-player-count'));
+			if (activePlayerCounts.has(playerCount)) {
+				btn.setAttribute('data-active', 'true');
+			}
+		});
 
 		// Add event listeners to player filter buttons
 		playerFilterBtns.forEach(btn => {
@@ -643,6 +757,7 @@ applyAllFilters();
 				}
 
 				applyPlayerCountFilter();
+				updateURL();
 				
 				// Also scroll to the player section
 				const playerSection = document.getElementById(`players-${playerCount}`);
@@ -651,6 +766,11 @@ applyAllFilters();
 				}
 			});
 		});
+
+		// Apply initial player count filter if any are active
+		if (activePlayerCounts.size > 0) {
+			applyPlayerCountFilter();
+		}
 
 		function clearAllPlayerFilters() {
 			playerFilterBtns.forEach(btn => {
