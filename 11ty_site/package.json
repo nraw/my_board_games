@@ -6,5 +6,8 @@
   },
   "optionalDependencies": {
     "@parcel/watcher": "^2.5.1"
+  },
+  "dependencies": {
+    "lucide": "^0.542.0"
   }
 }
