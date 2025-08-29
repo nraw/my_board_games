@@ -69,7 +69,7 @@ jobs:
           cd 11ty_site
           npm install @11ty/eleventy --save-dev
           npm install -D tailwindcss @tailwindcss/cli
-          npx @tailwindcss/cli -i ./static/input.css -o ./_site/style.css
+          npx tailwindcss -i ./static/input.css -o ./_site/style.css
           npx @11ty/eleventy --pathprefix="/${{ github.event.repository.name }}/"
 
 
