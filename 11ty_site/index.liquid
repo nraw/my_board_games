@@ -34,6 +34,31 @@ permalink: "index{{filter.all_players}}.html"
             color: white !important;
             border-color: #1e40af !important; /* blue-800 */
         }
+        /* Filter button states */
+        .filter-btn[data-filter-state="none"] {
+            color: #6b7280; /* gray-500 */
+        }
+        .filter-btn[data-filter-state="include"] {
+            color: #2563eb !important; /* blue-600 */
+            background-color: rgba(37, 99, 235, 0.1);
+            border-radius: 4px;
+        }
+        .filter-btn[data-filter-state="exclude"] {
+            color: #dc2626 !important; /* red-600 */
+            background-color: rgba(220, 38, 38, 0.1);
+            border-radius: 4px;
+        }
+        .dark .filter-btn[data-filter-state="none"] {
+            color: #9ca3af; /* gray-400 */
+        }
+        .dark .filter-btn[data-filter-state="include"] {
+            color: #3b82f6 !important; /* blue-500 */
+            background-color: rgba(59, 130, 246, 0.15);
+        }
+        .dark .filter-btn[data-filter-state="exclude"] {
+            color: #ef4444 !important; /* red-500 */
+            background-color: rgba(239, 68, 68, 0.15);
+        }
 	</style>
 </head>
 
@@ -72,45 +97,26 @@ permalink: "index{{filter.all_players}}.html"
 							<!-- end left side -->
 							<!-- right side -->
 							<div class='flex'>
-									<a data-selected="0" data-selectedmax="2" class="filterBestPlayer flex items-center border rounded px-1 my-1 mx-2
-										data-[selected='0']:dark:border-white/50
-										data-[selected='1']:dark:border-blue-500
-										" href="#">🔸</a>
-									<a data-selected="0" data-selectedmax="2" class="filterSelected flex items-center border rounded px-1 my-1 mx-2 hidden
-										data-[selected='0']:dark:border-white/50
-										data-[selected='1']:dark:border-blue-500
-										" href="#">🔷</a>
+									<a data-filter-state="none" data-filter-type="bestPlayer" class="filter-btn flex items-center border rounded px-1 my-1 mx-2" href="#">🔸</a>
+									<a data-filter-state="none" data-filter-type="selected" class="filter-btn flex items-center border rounded px-1 my-1 mx-2 hidden" href="#">🔷</a>
 								<div class='flex flex-row lg:flex-col items-center'>
 									<div class='flex items-center'>
-										<a href="#" class="filterShort  px-2 py-1 mx-1 text-sm
-												data-[selected='1']:dark:text-blue-500
-												data-[selected='2']:dark:text-red-500
-												">
+										<a href="#" data-filter-state="none" data-filter-type="short" class="filter-btn px-2 py-1 mx-1 text-sm">
 											<i data-lucide="rabbit" class='w-3 m-0'></i>
 										</a>
 										/
-										<a href="#" class="filterLong px-2 py-1 mx-1 text-sm
-												data-[selected='1']:dark:text-blue-500
-												data-[selected='2']:dark:text-red-500
-											">
+										<a href="#" data-filter-state="none" data-filter-type="long" class="filter-btn px-2 py-1 mx-1 text-sm">
 											<i data-lucide="snail" class='w-3 m-0'></i>
 										</a>
 									</div>
 									<div class='flex items-center'>
-										<a href="#" class="filterLight px-2 py-1 mx-1 text-sm
-												data-[selected='1']:dark:text-blue-500
-												data-[selected='2']:dark:text-red-500
-											">
+										<a href="#" data-filter-state="none" data-filter-type="light" class="filter-btn px-2 py-1 mx-1 text-sm">
 											<i data-lucide="feather" class='w-3 m-0'></i>
 										</a>
 										/
-											<a href="#" class="filterHeavy px-2 py-1 mx-1 text-sm
-												data-[selected='1']:dark:text-blue-500
-												data-[selected='2']:dark:text-red-500
-												">
+										<a href="#" data-filter-state="none" data-filter-type="heavy" class="filter-btn px-2 py-1 mx-1 text-sm">
 											<i data-lucide="dumbbell" class='w-3 m-0'></i>
 										</a>
-
 									</div>
 								</div>
 
@@ -445,128 +451,108 @@ function reorderDivs() {
 }
 	</script>
 	<script>
-// Define the CSS class for hiding elements
+// Filter state management system
+const filterState = {
+    short: 'none',
+    long: 'none', 
+    light: 'none',
+    heavy: 'none',
+    bestPlayer: 'none',
+    selected: 'none'
+};
+
 const HIDE_CLASS = 'hidden';
 
 // Get all the game elements
 const games = document.querySelectorAll('.sortable');
 
-// Define the filter functions
-function filterShort() {
+// Filter evaluation functions
+const filterChecks = {
+    short: (game) => Number(game.dataset.playingtime) < 21,
+    long: (game) => Number(game.dataset.playingtime) >= 90,
+    light: (game) => Number(game.dataset.averageweight) < 1.5,
+    heavy: (game) => Number(game.dataset.averageweight) >= 2.1,
+    bestPlayer: (game) => game.dataset.isbestplayer === 'true',
+    selected: (game) => game.classList.contains('selected')
+};
+
+// Apply all active filters to determine which games should be shown
+function applyAllFilters() {
+    const includeFilters = Object.keys(filterState).filter(key => filterState[key] === 'include');
+    const excludeFilters = Object.keys(filterState).filter(key => filterState[key] === 'exclude');
+    
     games.forEach(game => {
-        const playingTime = Number(game.dataset.playingtime);
-        if (playingTime >= 21) {
-            game.classList.add(HIDE_CLASS);
-						console.log(game.classList)
-        } else {
+        let shouldShow = true;
+        
+        // Check exclude filters first - if any exclude filter matches, hide the game
+        for (const filterType of excludeFilters) {
+            if (filterChecks[filterType](game)) {
+                shouldShow = false;
+                break;
+            }
+        }
+        
+        // If not excluded and there are include filters, game must match ALL include filters
+        if (shouldShow && includeFilters.length > 0) {
+            shouldShow = includeFilters.every(filterType => filterChecks[filterType](game));
+        }
+        
+        if (shouldShow) {
             game.classList.remove(HIDE_CLASS);
+        } else {
+            game.classList.add(HIDE_CLASS);
         }
     });
 }
 
-function filterLong() {
-    games.forEach(game => {
-        const playingTime = Number(game.dataset.playingtime);
-        if (playingTime <= 89) {
-            game.classList.add(HIDE_CLASS);
-        } else {
-            game.classList.remove(HIDE_CLASS);
-        }
+// Update filter button state and apply filters
+function toggleFilter(filterType) {
+    const states = ['none', 'include', 'exclude'];
+    const currentIndex = states.indexOf(filterState[filterType]);
+    const nextIndex = (currentIndex + 1) % states.length;
+    filterState[filterType] = states[nextIndex];
+    
+    // Update all buttons of this filter type
+    const buttons = document.querySelectorAll(`[data-filter-type="${filterType}"]`);
+    buttons.forEach(button => {
+        button.setAttribute('data-filter-state', filterState[filterType]);
+    });
+    
+    applyAllFilters();
+}
+
+// Initialize filter system
+function initializeFilterSystem() {
+    // Get all filter buttons and add event listeners
+    const filterButtons = document.querySelectorAll('.filter-btn[data-filter-type]');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const filterType = this.getAttribute('data-filter-type');
+            toggleFilter(filterType);
+        });
     });
 }
 
-function filterLight() {
-    games.forEach(game => {
-        const weight = Number(game.dataset.averageweight);
-        if (weight >= 1.5) {
-            game.classList.add(HIDE_CLASS);
-        } else {
-            game.classList.remove(HIDE_CLASS);
-        }
+// Initialize the system
+initializeFilterSystem();
+
+// Show selected game filter buttons when games are selected
+function showSelectedButtons() {
+    const selectedButtons = document.querySelectorAll('[data-filter-type="selected"]');
+    selectedButtons.forEach(button => {
+        button.classList.remove("hidden");
     });
 }
-
-function filterHeavy() {
-    games.forEach(game => {
-        const weight = Number(game.dataset.averageweight);
-        if (weight <= 2) {
-            game.classList.add(HIDE_CLASS);
-        } else {
-            game.classList.remove(HIDE_CLASS);
-        }
-    });
-}
-
-function filterBestPlayer() {
-    games.forEach(game => {
-        const isBestPlayer = game.dataset.isbestplayer === 'true';
-        if (!isBestPlayer) {
-            game.classList.add(HIDE_CLASS);
-        } else {
-            game.classList.remove(HIDE_CLASS);
-        }
-    });
-}
-function filterSelected() {
-		const filterButton = document.querySelector('.filterSelected');
-		const isActive = filterButton.classList.toggle('active');
-		
-		games.forEach(game => {
-				if (isActive && !game.classList.contains('selected')) {
-						game.classList.add(HIDE_CLASS);
-				} else {
-						game.classList.remove(HIDE_CLASS);
-				}
-		});
-}
-
-// Get all the buttons for each filter
-const shortButtons = document.querySelectorAll('.filterShort');
-const longButtons = document.querySelectorAll('.filterLong');
-const lightButtons = document.querySelectorAll('.filterLight');
-const heavyButtons = document.querySelectorAll('.filterHeavy');
-const bestPlayerButtons = document.querySelectorAll('.filterBestPlayer');
-const selectedButtons = document.querySelectorAll('.filterSelected');
-
-
-function increaseDataSelected(button) {
-    let currentVal = parseInt(button.getAttribute('data-selected')) || 0;
-    let maxVal = parseInt(button.getAttribute('data-selectedmax')) || 3;
-    button.setAttribute('data-selected', (currentVal + 1) % maxVal);
-}
-// Add the event listener to each button
-shortButtons.forEach(button => button.addEventListener('click', function() {
-    increaseDataSelected(button);
-    filterShort();
-}));
-
-longButtons.forEach(button => button.addEventListener('click', function() {
-    increaseDataSelected(button);
-    filterLong();
-}));
-
-lightButtons.forEach(button => button.addEventListener('click', function() {
-    increaseDataSelected(button);
-    filterLight();
-}));
-
-heavyButtons.forEach(button => button.addEventListener('click', function() {
-    increaseDataSelected(button);
-    filterHeavy();
-}));
-
-bestPlayerButtons.forEach(button => button.addEventListener('click', function() {
-    increaseDataSelected(button);
-    filterBestPlayer();
-}));
-
-selectedButtons.forEach(button => button.addEventListener('click', function() {
-    increaseDataSelected(button);
-    filterSelected();
-}));
 
 {% if filter.all_players == "all" %}
-filterBestPlayer();
+// Auto-activate best player filter on "all" pages
+filterState.bestPlayer = 'include';
+document.querySelectorAll('[data-filter-type="bestPlayer"]').forEach(button => {
+    button.setAttribute('data-filter-state', 'include');
+});
+applyAllFilters();
 {% endif %}
 
 	</script>
@@ -622,6 +608,9 @@ filterBestPlayer();
                     instance.classList.add('selected');
                 }
             });
+            
+            // Reapply filters after selection changes
+            applyAllFilters();
         }
 
         document.querySelectorAll('.sortable').forEach(game => {
