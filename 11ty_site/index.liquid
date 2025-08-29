@@ -801,6 +801,11 @@ applyAllFilters();
 			modal.classList.remove('hidden');
 			document.body.style.overflow = 'hidden';
 			
+			// Initialize Lucide icons in the modal
+			if (window.lucide) {
+				lucide.createIcons();
+			}
+			
 			// Focus management - use setTimeout to ensure DOM is updated
 			setTimeout(() => {
 				modalClose.focus();
