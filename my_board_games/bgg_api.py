@@ -497,7 +497,7 @@ class BGGClient:
                         pass
             numplays_elem = item_elem.find("numplays")
             numplays = 0
-            if numplays_elem:
+            if numplays_elem is not None:
                 numplays = int(numplays_elem.text or "0")
 
             item_data = {
