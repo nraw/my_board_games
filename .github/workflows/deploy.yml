@@ -39,6 +39,8 @@ jobs:
 
       - name: Upload data artifacts 🚀
         uses: actions/upload-artifact@v4
+        env:
+          BGG_API_KEY: ${{ secrets.BGG_API_KEY }}
         with:
           name: data
           path: 'data'
