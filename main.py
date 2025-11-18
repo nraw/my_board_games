@@ -34,10 +34,10 @@ def main():
     ratings = get_personal_ratings()
     games = add_ratings(games, ratings)
     logger.info("Added ratings to metadata")
-    logger.info("Getting sizes")
-    sizes = get_sizes(game_ids)
-    games = add_sizes(games, sizes)
-    logger.info("Added sizes to metadata")
+    #  logger.info("Getting sizes")
+    #  sizes = get_sizes(game_ids)
+    #  games = add_sizes(games, sizes)
+    #  logger.info("Added sizes to metadata")
     logger.info("Getting suggested players table")
     suggested_players = get_suggested_players(games)
     logger.info("Got suggested players table")
@@ -58,7 +58,7 @@ def get_my_games(bgg) -> pd.DataFrame:
     )
     games_info = {game.id: game._data for game in games_batch if "id" in dir(game)}
     my_games = pd.DataFrame(games_info).T
-    my_games = my_games[my_games.own == "1"]
+    #  my_games = my_games[my_games.own == "1"]
     my_games = my_games[~my_games.id.isin(exclude_list)]
     return my_games
 
@@ -71,14 +71,14 @@ def add_numplays(games, my_games):
 
 
 @retry(tries=10, delay=3, backoff=2)
-def get_collection(bgg, **kwargs):
+def get_collection(bgg: BGGClient, **kwargs):
     collection = bgg.collection(**kwargs)
     return collection
 
 
 def get_games(game_ids, bgg):
     games_batches = get_games_in_batches(game_ids, bgg)
-    games_info = {game.id: game._data for game in games_batches if "id" in dir(game)}
+    games_info = {game.id: game.data() for game in games_batches if "id" in dir(game)}
     games = pd.DataFrame(games_info).T
     games["url"] = "https://boardgamegeek.com/boardgame/" + games["id"].astype("str")
     games["average_rating"] = games["stats"].apply(lambda x: x["average"])

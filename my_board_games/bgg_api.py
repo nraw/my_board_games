@@ -418,19 +418,19 @@ class BGGClient:
             rating = None
 
             if stats_elem is not None:
-                minplayers_elem = stats_elem.find("minplayers")
-                maxplayers_elem = stats_elem.find("maxplayers")
+                minplayers_elem = stats_elem.get("minplayers")
+                maxplayers_elem = stats_elem.get("maxplayers")
                 rating_elem = stats_elem.find(".//average")
 
                 if minplayers_elem is not None:
                     try:
-                        min_players = int(minplayers_elem.text)
+                        min_players = int(minplayers_elem)
                     except (ValueError, TypeError):
                         pass
 
                 if maxplayers_elem is not None:
                     try:
-                        max_players = int(maxplayers_elem.text)
+                        max_players = int(maxplayers_elem)
                     except (ValueError, TypeError):
                         pass
 
@@ -450,6 +450,10 @@ class BGGClient:
                         wishlist_priority = int(priority)
                     except (ValueError, TypeError):
                         pass
+            numplays_elem = item_elem.find("numplays")
+            numplays = 0
+            if numplays_elem:
+                numplays = int(numplays_elem.text or "0")
 
             item_data = {
                 "id": item_id,
@@ -459,6 +463,7 @@ class BGGClient:
                 "maxplayers": max_players,
                 "rating": rating,
                 "wishlistpriority": wishlist_priority,
+                "numplays": numplays,
             }
 
             items.append(CollectionItem(id=item_id, _data=item_data))

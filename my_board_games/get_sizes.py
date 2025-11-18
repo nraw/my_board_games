@@ -34,7 +34,7 @@ def get_sizes(game_ids):
 
 
 @retry(tries=10, delay=3, backoff=2)
-def get_game_size_data(bgg, game_id):
+def get_game_size_data(bgg: BGGClient, game_id):
     g = bgg.game(game_id=game_id, versions=True)
     return g
 
