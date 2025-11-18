@@ -15,7 +15,7 @@ def get_personal_ratings():
     ratings = []
     #  url = f"https://boardgamegeek.com/xmlapi2/collection?username={username}&rated=1&stats=1"
     url = f"https://boardgamegeek.com/xmlapi2/collection?username={username}&own=1&stats=1"
-    BGG_API_KEY = os.environ.get("BGG_API_KEY")
+    BGG_API_KEY = os.environ["BGG_API_KEY"]
     headers = {"Authorization": "Bearer " + BGG_API_KEY}
     response = requests.get(url, headers=headers)
     if response.status_code == 200:

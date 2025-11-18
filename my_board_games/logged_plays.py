@@ -11,7 +11,7 @@ def get_logged_plays():
     username = conf["user_name"]
     # API endpoint for retrieving plays data
     url = f"https://boardgamegeek.com/xmlapi2/plays?username={username}&page="
-    BGG_API_KEY = os.environ.get("BGG_API_KEY")
+    BGG_API_KEY = os.environ["BGG_API_KEY"]
     headers = {"Authorization": "Bearer " + BGG_API_KEY}
 
     # Retrieve all pages of plays data

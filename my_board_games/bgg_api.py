@@ -80,7 +80,7 @@ class BGGClient:
         self.session = requests.Session()
 
         # Set up authentication if BGG_API_KEY is available
-        bgg_api_key = os.environ.get("BGG_API_KEY", "")
+        bgg_api_key = os.environ["BGG_API_KEY"]
         if bgg_api_key:
             self.session.headers.update({"Authorization": f"Bearer {bgg_api_key}"})
         else:
