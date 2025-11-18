@@ -1,19 +1,24 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import pandas as pd
-from boardgamegeek import BGGClient
 from retry import retry
 from tqdm import tqdm
-from concurrent.futures import ThreadPoolExecutor, as_completed
+
+from my_board_games.bgg_api import BGGClient
 
 
 def get_sizes(game_ids):
     bgg = BGGClient()
     games_sizes = []
-    
+
     # Use ThreadPoolExecutor for parallel fetching
     with ThreadPoolExecutor(max_workers=8) as executor:
         # Submit all tasks
-        future_to_game_id = {executor.submit(get_game_size_data, bgg, game_id): game_id for game_id in game_ids}
-        
+        future_to_game_id = {
+            executor.submit(get_game_size_data, bgg, game_id): game_id
+            for game_id in game_ids
+        }
+
         # Collect results as they complete
         for future in tqdm(as_completed(future_to_game_id), total=len(game_ids)):
             game_id = future_to_game_id[future]
@@ -21,8 +26,8 @@ def get_sizes(game_ids):
                 result = future.result()
                 games_sizes.append(result)
             except Exception as exc:
-                print(f'Game ID {game_id} generated an exception: {exc}')
-    
+                print(f"Game ID {game_id} generated an exception: {exc}")
+
     sizes = pd.concat([get_size(g) for g in games_sizes])
     sizes = sizes.reset_index()
     return sizes

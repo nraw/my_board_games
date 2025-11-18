@@ -1,6 +1,5 @@
 altair==4.2.0
 beautifulsoup4==4.11.1
-boardgamegeek2==1.0.1
 loguru==0.6.0
 numpy
 pandas
