@@ -83,6 +83,10 @@ class BGGClient:
         bgg_api_key = os.environ.get("BGG_API_KEY", "")
         if bgg_api_key:
             self.session.headers.update({"Authorization": f"Bearer {bgg_api_key}"})
+        else:
+            logger.warning(
+                "No BGG_API_KEY found in environment; proceeding without authentication."
+            )
 
     def _make_request(self, endpoint, params=None):
         """Make a request to the BGG API with retries.
