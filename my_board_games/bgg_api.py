@@ -241,10 +241,49 @@ class BGGClient:
             int(max_players_elem.get("value", 1)) if max_players_elem is not None else 1
         )
 
+        # Suggested players
+        suggested_players_elem = item.find(".//poll[@name='suggested_numplayers']")
+        suggested_players = {"results": {}, "totalvotes": 0}
+        if suggested_players_elem is not None:
+            total_votes = suggested_players_elem.get("totalvotes", "0")
+            try:
+                suggested_players["totalvotes"] = int(total_votes)
+            except (ValueError, TypeError):
+                suggested_players["totalvotes"] = 0
+
+            for numplayers in suggested_players_elem.findall("results"):
+                player_count = numplayers.get("numplayers")
+                if player_count:
+                    ratings = {
+                        "best_rating": 0,
+                        "recommended_rating": 0,
+                        "not_recommended_rating": 0,
+                    }
+                    for result in numplayers.findall("result"):
+                        rating_type = result.get("value")
+                        votes = result.get("numvotes", "0")
+                        try:
+                            votes_int = int(votes)
+                        except (ValueError, TypeError):
+                            votes_int = 0
+                        if rating_type == "Best":
+                            ratings["best_rating"] = votes_int
+                        elif rating_type == "Recommended":
+                            ratings["recommended_rating"] = votes_int
+                        elif rating_type == "Not Recommended":
+                            ratings["not_recommended_rating"] = votes_int
+                    suggested_players["results"][player_count] = ratings
+
         # Get rating
         rating_elem = item.find(".//average")
         rating_average = (
             float(rating_elem.get("value", 0)) if rating_elem is not None else 0.0
+        )
+
+        # Playingtime
+        playingtime_elem = item.find("playingtime")
+        playingtime = (
+            int(playingtime_elem.get("value", 0)) if playingtime_elem is not None else 0
         )
 
         # Get expansions
@@ -267,6 +306,8 @@ class BGGClient:
             "maxplayers": max_players,
             "stats": self._parse_stats(item),
             "expansions": [exp.data() for exp in expansions],
+            "suggested_players": suggested_players,
+            "playingtime": playingtime,
         }
 
         # Add versions if requested
