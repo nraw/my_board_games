@@ -17,6 +17,41 @@ permalink: "index{{filter.all_players}}.html"
 				.hidden {
 						display: none;
 				}
+        /* Toast notification styles */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out, slideOut 0.3s ease-in 2.7s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
         /* Add styles for the selected state */
         .sortable.selected {
             background-color: #1d4ed8; /* dark blue-gray */
@@ -400,7 +435,9 @@ const sort_category_element = document.getElementById("sort_category");
 
 
 // Add an event listener to the button
-button.addEventListener("click", reorderDivs);
+button.addEventListener("click", function() {
+	reorderDivs(false);
+});
 sort_category_element.innerHTML = attributes[0];
 
 // Function to reorder the divs
@@ -415,11 +452,10 @@ function reorderDivs(skipCycle = false) {
 	let attributeValue = parseInt(button.dataset.index, 10) || 0;
 	const attributeIndex = skipCycle ? attributeValue : (attributeValue + 1) % attributes.length
 	const attribute = attributes[attributeIndex]
-	
+
 	containers.forEach(container => {
 
 		const divs = container.querySelectorAll(".sortable");
-		console.log(attribute)
 
 		// Create an array of the divs
 		const divArray = Array.from(divs);
@@ -429,10 +465,17 @@ function reorderDivs(skipCycle = false) {
 				const aValue = a.dataset[attribute];
 				const bValue = b.dataset[attribute];
 
+				// Handle undefined/null values - treat them as lowest priority
+				if (aValue == null && bValue == null) return 0;
+				if (aValue == null) return 1;
+				if (bValue == null) return -1;
+
 				// Check if the values are numeric
-				if (!isNaN(aValue) && !isNaN(bValue)) {
+				const aNum = Number(aValue);
+				const bNum = Number(bValue);
+				if (!isNaN(aNum) && !isNaN(bNum) && aValue !== '' && bValue !== '') {
 						// Compare as numbers
-						return Number(bValue) - Number(aValue);
+						return bNum - aNum;
 				} else {
 						// Compare as strings
 						return aValue.localeCompare(bValue);
@@ -446,11 +489,44 @@ function reorderDivs(skipCycle = false) {
 		divArray.forEach((div) => container.appendChild(div));
 
 	});
+
 	button.dataset.index = attributeIndex;
 	sort_category_element.innerHTML = attribute;
+
+	// Show toast notification
+	showToast('Sorting by: ' + attribute);
+
+	// Reattach event listeners after DOM recreation
+	if (typeof attachSwipeListeners === 'function') {
+		attachSwipeListeners();
+	}
+	if (typeof addGameCardListeners === 'function') {
+		addGameCardListeners();
+	}
+
 	if (!skipCycle) {
 		updateURL();
 	}
+}
+
+// Toast notification function
+function showToast(message) {
+	// Remove any existing toasts
+	const existingToast = document.querySelector('.toast');
+	if (existingToast) {
+		existingToast.remove();
+	}
+
+	// Create new toast
+	const toast = document.createElement('div');
+	toast.className = 'toast';
+	toast.textContent = message;
+	document.body.appendChild(toast);
+
+	// Remove toast after animation completes
+	setTimeout(() => {
+		toast.remove();
+	}, 3000);
 }
 	</script>
 	<script>
@@ -531,9 +607,6 @@ const filterState = getFiltersFromURL();
 
 const HIDE_CLASS = 'hidden';
 
-// Get all the game elements
-const games = document.querySelectorAll('.sortable');
-
 // Filter evaluation functions
 const filterChecks = {
     short: (game) => Number(game.dataset.playingtime) < 21,
@@ -548,7 +621,10 @@ const filterChecks = {
 function applyAllFilters() {
     const includeFilters = Object.keys(filterState).filter(key => filterState[key] === 'include');
     const excludeFilters = Object.keys(filterState).filter(key => filterState[key] === 'exclude');
-    
+
+    // Query fresh elements each time since sorting recreates the DOM
+    const games = document.querySelectorAll('.sortable');
+
     games.forEach(game => {
         let shouldShow = true;
         
@@ -681,16 +757,6 @@ applyAllFilters();
             handleSwipe();
         }
 
-				function showSelectedButtons() {
-
-					const selectedButtons = document.querySelectorAll('.filterSelected');
-
-					selectedButtons.forEach(button => {
-						button.classList.remove("hidden");
-					});
-				}
-
-
         function handleSwipe() {
             const SWIPE_THRESHOLD = 50;
             if (Math.abs(touchEndX - touchStartX) > SWIPE_THRESHOLD) {
@@ -704,7 +770,7 @@ applyAllFilters();
         function toggleSelectionForGame(gameName) {
             const allInstances = document.querySelectorAll(`.sortable[data-name="${gameName}"]`);
             const isCurrentlySelected = currentElement.classList.contains('selected');
-            
+
             allInstances.forEach(instance => {
                 if (isCurrentlySelected) {
                     instance.classList.remove('selected');
@@ -712,16 +778,21 @@ applyAllFilters();
                     instance.classList.add('selected');
                 }
             });
-            
+
             // Reapply filters after selection changes
             applyAllFilters();
             updateURL();
         }
 
-        document.querySelectorAll('.sortable').forEach(game => {
-            game.addEventListener('touchstart', handleTouchStart, false);
-            game.addEventListener('touchend', handleTouchEnd, false);
-        });
+        function attachSwipeListeners() {
+            document.querySelectorAll('.sortable').forEach(game => {
+                game.addEventListener('touchstart', handleTouchStart, false);
+                game.addEventListener('touchend', handleTouchEnd, false);
+            });
+        }
+
+        // Initial attachment of swipe listeners
+        attachSwipeListeners();
 	</script>
 	<script>
 		// Player count filtering functionality  
@@ -754,16 +825,16 @@ applyAllFilters();
 					// Activate this button
 					this.setAttribute('data-active', 'true');
 					activePlayerCounts.add(playerCount);
+
+					// Scroll to the player section only when activating
+					const playerSection = document.getElementById(`players-${playerCount}`);
+					if (playerSection) {
+						playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+					}
 				}
 
 				applyPlayerCountFilter();
 				updateURL();
-				
-				// Also scroll to the player section
-				const playerSection = document.getElementById(`players-${playerCount}`);
-				if (playerSection) {
-					playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-				}
 			});
 		});
 
