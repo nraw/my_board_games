@@ -23,18 +23,18 @@ def get_metrics():
     games_for_sale = [g for g in owned_games if g.get("marketplace_price")]
     num_games_for_sale = len(games_for_sale)
     total_marketplace_value = (
-        sum([g["marketplace_price"] for g in games_for_sale]) if games_for_sale else 0
+        sum([float(g["marketplace_price"]) for g in games_for_sale]) if games_for_sale else 0
     )
     average_marketplace_price = (
         total_marketplace_value / num_games_for_sale if num_games_for_sale > 0 else 0
     )
     most_expensive_game = (
-        max(games_for_sale, key=lambda x: x["marketplace_price"])["name"]
+        max(games_for_sale, key=lambda x: float(x["marketplace_price"]))["name"]
         if games_for_sale
         else None
     )
     most_expensive_price = (
-        max(games_for_sale, key=lambda x: x["marketplace_price"])["marketplace_price"]
+        max(games_for_sale, key=lambda x: float(x["marketplace_price"]))["marketplace_price"]
         if games_for_sale
         else 0
     )
