@@ -38,6 +38,8 @@ jobs:
         run: make run
         env:
           BGG_API_KEY: ${{ secrets.BGG_API_KEY }}
+          BGG_USERNAME: ${{ secrets.BGG_USERNAME }}
+          BGG_PASSWORD: ${{ secrets.BGG_PASSWORD }}
 
       - name: Upload data artifacts 🚀
         uses: actions/upload-artifact@v4
