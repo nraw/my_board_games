@@ -83,7 +83,7 @@ class BGGClient:
         # Load environment variables from .env file
         load_dotenv()
 
-        # Set up authentication if BGG_API_KEY is available
+        # Set up authentication if BGG_API_KEY is available (for rate limiting identification)
         bgg_api_key = os.environ.get("BGG_API_KEY")
         if bgg_api_key:
             self.session.headers.update({"Authorization": f"Bearer {bgg_api_key}"})
@@ -91,6 +91,58 @@ class BGGClient:
             logger.warning(
                 "No BGG_API_KEY found in environment; proceeding without authentication."
             )
+
+        # Try to login with username/password to get session cookies for private info access
+        self._login_for_private_info()
+
+    def _login_for_private_info(self):
+        """Login to BGG to get session cookies for accessing private info."""
+        username = os.environ.get("BGG_USERNAME")
+        password = os.environ.get("BGG_PASSWORD")
+
+        if not username or not password:
+            logger.info(
+                "BGG_USERNAME or BGG_PASSWORD not set. "
+                "Private info (inventory location) will not be available."
+            )
+            return False
+
+        try:
+            # Use the login API endpoint
+            login_url = "https://boardgamegeek.com/login/api/v1"
+            # Credentials must be wrapped in a "credentials" object
+            payload = {"credentials": {"username": username, "password": password}}
+
+            response = self.session.post(
+                login_url, json=payload, timeout=self.timeout
+            )
+
+            # Status 200 or 204 indicates successful login
+            if response.status_code in (200, 204):
+                # Check if we got session cookies
+                cookie_names = list(self.session.cookies.keys())
+                if "bggusername" in self.session.cookies or "SessionID" in self.session.cookies:
+                    logger.info(
+                        f"Successfully logged in as {username} - "
+                        f"cookies: {cookie_names} - private info access enabled"
+                    )
+                    return True
+                else:
+                    logger.warning(
+                        f"Login succeeded (status {response.status_code}) "
+                        f"but no session cookies received. Cookies: {cookie_names}"
+                    )
+                    return False
+            else:
+                logger.warning(
+                    f"BGG login failed with status {response.status_code}. "
+                    "Private info will not be available."
+                )
+                return False
+
+        except Exception as e:
+            logger.warning(f"Failed to login to BGG: {e}. Private info will not be available.")
+            return False
 
     def _make_request(self, endpoint, params=None):
         """Make a request to the BGG API with retries.
@@ -446,6 +498,9 @@ class BGGClient:
         # Add stats to get more information
         params["stats"] = 1
 
+        # Add showprivate=1 to retrieve private info (inventory location, etc.)
+        params["showprivate"] = 1
+
         root = self._make_request("collection", params)
 
         # Parse collection items
@@ -504,6 +559,13 @@ class BGGClient:
             if numplays_elem is not None:
                 numplays = int(numplays_elem.text or "0")
 
+            # Parse private info (inventory location, etc.)
+            privateinfo_elem = item_elem.find("privateinfo")
+            invlocation = None
+            if privateinfo_elem is not None:
+                # The attribute is called "inventorylocation", not "invlocation"
+                invlocation = privateinfo_elem.get("inventorylocation")
+
             item_data = {
                 "id": item_id,
                 "name": name,
@@ -513,6 +575,7 @@ class BGGClient:
                 "rating": rating,
                 "wishlistpriority": wishlist_priority,
                 "numplays": numplays,
+                "invlocation": invlocation,
             }
 
             items.append(CollectionItem(id=item_id, _data=item_data))

@@ -65,6 +65,19 @@ def get_my_games(bgg) -> pd.DataFrame:
     my_games = pd.DataFrame(games_info).T
     #  my_games = my_games[my_games.own == "1"]
     my_games = my_games[~my_games.id.isin(exclude_list)]
+
+    # Exclude games with inventory location set (games not available to play)
+    # invlocation field comes from BGG's privateinfo when authenticated
+    if "invlocation" in my_games.columns:
+        before_count = len(my_games)
+        my_games = my_games[my_games.invlocation.isna() | (my_games.invlocation == "")]
+        excluded_count = before_count - len(my_games)
+        if excluded_count > 0:
+            logger.info(
+                f"Excluded {excluded_count} games with inventory location set "
+                "(not available to play)"
+            )
+
     return my_games
 
 
