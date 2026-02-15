@@ -54,12 +54,28 @@ def add_marketplace_prices(games, marketplace_listings):
         games["marketplace_link"] = None
         return games
 
+    # Debug: Check ID types and sample values
+    logger.info(f"Games ID type: {games['id'].dtype}, sample: {games['id'].head().tolist()}")
+    logger.info(f"Marketplace ID type: {marketplace_listings['id'].dtype}, sample: {marketplace_listings['id'].head().tolist()}")
+
+    # Ensure both ID columns are the same type (int)
+    games['id'] = games['id'].astype(int)
+    marketplace_listings['id'] = marketplace_listings['id'].astype(int)
+
+    # Check for matches
+    matching_ids = set(games['id']) & set(marketplace_listings['id'])
+    logger.info(f"Matching IDs: {matching_ids}")
+
+    # For games with multiple listings, keep the cheapest one
+    marketplace_listings_dedup = marketplace_listings.sort_values('price').groupby('id').first().reset_index()
+    logger.info(f"Deduped marketplace listings: {len(marketplace_listings)} -> {len(marketplace_listings_dedup)}")
+
     # Merge marketplace data with games
     games = games.merge(
-        marketplace_listings[["id", "price", "currency", "condition", "link"]],
+        marketplace_listings_dedup[["id", "price", "currency", "condition", "link"]],
         on="id",
         how="left",
-        validate="one_to_many",
+        validate="one_to_one",
     )
 
     # Rename columns for clarity

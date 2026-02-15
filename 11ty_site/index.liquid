@@ -134,6 +134,9 @@ permalink: "index{{filter.all_players}}.html"
 							<div class='flex'>
 									<a data-filter-state="none" data-filter-type="bestPlayer" class="filter-btn flex items-center border rounded px-1 my-1 mx-2" href="#">🔸</a>
 									<a data-filter-state="none" data-filter-type="selected" class="filter-btn flex items-center border rounded px-1 my-1 mx-2 hidden" href="#">🔷</a>
+									<a data-filter-state="none" data-filter-type="forSale" class="filter-btn flex items-center border rounded px-1 my-1 mx-2" href="#">
+										<i data-lucide="badge-euro" class='w-4 h-4 text-yellow-500 dark:text-yellow-400'></i>
+									</a>
 								<div class='flex flex-row lg:flex-col items-center'>
 									<div class='flex items-center'>
 										<a href="#" data-filter-state="none" data-filter-type="short" class="filter-btn px-2 py-1 mx-1 text-sm">
@@ -166,7 +169,7 @@ permalink: "index{{filter.all_players}}.html"
 
 						{% if game.players ==player_count or player_count == -1%}
 						{% assign days_since = game.days_since_last_played | at_most: 360 %}
-						<a class="shadow p-1 mx-2 my-1 text-sm rounded sortable game-card" href="{{ game.url }}" target="_blank" 
+						<a class="shadow p-1 mx-2 my-1 text-sm rounded sortable game-card" href="{{ game.url }}" target="_blank"
 							data-name="{{ game.name}}"
 							data-rating="{{ game.rating}}"
 							data-averageweight="{{ game.stats.averageweight }}"
@@ -180,6 +183,7 @@ permalink: "index{{filter.all_players}}.html"
 							data-url="{{ game.url }}"
 							data-players="{{ game.players }}"
 							data-thumbnail="{{ game.thumbnail }}"
+							data-marketplace="{{ game.marketplace_price }}"
 							>
 							<div class="flex gap-3">
 								<!-- Thumbnail -->
@@ -211,21 +215,29 @@ permalink: "index{{filter.all_players}}.html"
 											{% if game.is_best_player %}
 											<span class="text-sm">🔸</span>
 											{% endif %}
-											
+
 											<!-- Speed icon -->
 											{% if game.playingtime < 21 %}
 											<i data-lucide="rabbit" class='w-3 h-3'></i>
 											{% elsif game.playingtime >= 90 %}
 											<i data-lucide="snail" class='w-3 h-3'></i>
 											{% endif %}
-											
+
 											<!-- Weight icon -->
 											{% if game.stats.averageweight < 1.5 %}
 											<i data-lucide="feather" class='w-3 h-3'></i>
 											{% elsif game.stats.averageweight >= 2.1 %}
 											<i data-lucide="dumbbell" class='w-3 h-3'></i>
 											{% endif %}
-											
+
+											<!-- Marketplace Price -->
+											{% if game.marketplace_price %}
+											{% assign rounded_price = game.marketplace_price | round %}
+											<div class="bg-yellow-500 dark:bg-yellow-600 text-white rounded-full px-2 py-0.5 text-xs font-semibold flex items-center gap-1">
+												€{{ rounded_price }}
+											</div>
+											{% endif %}
+
 											<!-- Numplays -->
 											{% if game.numplays > 0 %}
 												{% assign numplays_colors = "bg-blue-100 dark:bg-blue-900" %}
@@ -436,7 +448,7 @@ permalink: "index{{filter.all_players}}.html"
 
 // Get the container and the button
 const button = document.getElementById("reorder-button");
-const attributes = ['days', 'numplays', 'name', 'rating', 'average', 'owned', 'size', 'playingtime'];
+const attributes = ['days', 'numplays', 'name', 'rating', 'average', 'owned', 'size', 'playingtime', 'marketplace'];
 const sort_category_element = document.getElementById("sort_category");
 
 
@@ -542,7 +554,7 @@ function getFiltersFromURL() {
     const filters = {};
     
     // Get filter states from URL parameters
-    ['short', 'long', 'light', 'heavy', 'bestPlayer', 'selected'].forEach(filter => {
+    ['short', 'long', 'light', 'heavy', 'bestPlayer', 'selected', 'forSale'].forEach(filter => {
         const value = params.get(filter);
         if (value && ['none', 'include', 'exclude'].includes(value)) {
             filters[filter] = value;
@@ -620,7 +632,8 @@ const filterChecks = {
     light: (game) => Number(game.dataset.averageweight) < 1.5,
     heavy: (game) => Number(game.dataset.averageweight) >= 2.1,
     bestPlayer: (game) => game.dataset.isbestplayer === 'true',
-    selected: (game) => game.classList.contains('selected')
+    selected: (game) => game.classList.contains('selected'),
+    forSale: (game) => game.dataset.marketplace !== '' && game.dataset.marketplace !== 'null' && game.dataset.marketplace !== 'undefined'
 };
 
 // Apply all active filters to determine which games should be shown
