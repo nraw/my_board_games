@@ -840,20 +840,25 @@ applyAllFilters();
 					// Deactivate this button
 					this.setAttribute('data-active', 'false');
 					activePlayerCounts.delete(playerCount);
+					applyPlayerCountFilter();
+					updateURL();
 				} else {
 					// Activate this button
 					this.setAttribute('data-active', 'true');
 					activePlayerCounts.add(playerCount);
 
-					// Scroll to the player section only when activating
-					const playerSection = document.getElementById(`players-${playerCount}`);
-					if (playerSection) {
-						playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-					}
-				}
+					// Apply filter first, then scroll after DOM updates
+					applyPlayerCountFilter();
+					updateURL();
 
-				applyPlayerCountFilter();
-				updateURL();
+					// Use requestAnimationFrame to ensure DOM has updated before scrolling
+					requestAnimationFrame(() => {
+						const playerSection = document.getElementById(`players-${playerCount}`);
+						if (playerSection) {
+							playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+						}
+					});
+				}
 			});
 		});
 
