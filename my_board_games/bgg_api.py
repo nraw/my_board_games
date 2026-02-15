@@ -404,6 +404,7 @@ class BGGClient:
             "bayesaverage": get_value(stats_elem, "bayesaverage"),
             "stddev": get_value(stats_elem, "stddev"),
             "median": get_value(stats_elem, "median"),
+            "averageweight": get_value(stats_elem, "averageweight"),
             "ranks": [],
         }
 
