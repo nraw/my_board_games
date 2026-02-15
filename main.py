@@ -10,6 +10,7 @@ from my_board_games.get_sizes import add_sizes, get_sizes
 from my_board_games.get_suggested_players import get_suggested_players
 from my_board_games.logged_plays import add_logged_plays, get_logged_plays
 from my_board_games.make_charts import make_charts
+from my_board_games.get_marketplace import add_marketplace_prices, get_marketplace_listings
 from my_board_games.settings import conf
 
 
@@ -34,6 +35,10 @@ def main():
     ratings = get_personal_ratings()
     games = add_ratings(games, ratings)
     logger.info("Added ratings to metadata")
+    logger.info("Getting marketplace listings")
+    marketplace_listings = get_marketplace_listings()
+    games = add_marketplace_prices(games, marketplace_listings)
+    logger.info("Added marketplace prices to metadata")
     #  logger.info("Getting sizes")
     #  sizes = get_sizes(game_ids)
     #  games = add_sizes(games, sizes)

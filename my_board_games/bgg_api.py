@@ -8,6 +8,7 @@ from typing import List, Optional
 from urllib.parse import quote
 
 import requests
+from dotenv import load_dotenv
 from loguru import logger
 
 
@@ -79,8 +80,11 @@ class BGGClient:
         self.retry_delay = retry_delay
         self.session = requests.Session()
 
+        # Load environment variables from .env file
+        load_dotenv()
+
         # Set up authentication if BGG_API_KEY is available
-        bgg_api_key = os.environ["BGG_API_KEY"]
+        bgg_api_key = os.environ.get("BGG_API_KEY")
         if bgg_api_key:
             self.session.headers.update({"Authorization": f"Bearer {bgg_api_key}"})
         else:
@@ -537,3 +541,85 @@ class BGGClient:
             games.append(self._parse_game_data(item))
 
         return games
+
+    def get_user_id(self, user_name):
+        """Get BGG user ID from username.
+
+        Args:
+            user_name: BGG username
+
+        Returns:
+            User ID as integer
+
+        Raises:
+            BGGApiError: If user not found
+        """
+        params = {"name": user_name, "type": "user"}
+        root = self._make_request("user", params)
+
+        user_id = root.get("id")
+        if not user_id:
+            raise BGGApiError(f"Could not get user ID for {user_name}")
+
+        return int(user_id)
+
+    def marketplace_listings(self, user_name):
+        """Get a user's marketplace inventory listings.
+
+        Args:
+            user_name: BGG username
+
+        Returns:
+            List of marketplace listings with game info and prices
+
+        Raises:
+            BGGApiError: If API request fails
+        """
+        # First get the user ID
+        user_id = self.get_user_id(user_name)
+        logger.info(f"Found user ID: {user_id} for username: {user_name}")
+
+        # Use the GeekDo marketplace API
+        marketplace_url = "https://api.geekdo.com/api/market/products"
+        params = {
+            "ajax": 1,
+            "browsetype": "inventory",
+            "userid": user_id,
+            "productstate": "active",
+            "stock": "instock",
+            "sort": "title",
+            "pageid": 1,
+        }
+
+        try:
+            response = self.session.get(
+                marketplace_url, params=params, timeout=self.timeout
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            listings = []
+
+            # Parse marketplace products
+            if "products" in data:
+                for product in data["products"]:
+                    listing_data = {
+                        "id": product.get("objectid"),
+                        "price": product.get("price"),
+                        "currency": product.get("currency"),
+                        "condition": product.get("condition"),
+                        "product_id": product.get("productid"),
+                        "link": f"https://boardgamegeek.com/market/product/{product.get('productid')}",
+                    }
+
+                    # Only include if we have valid data
+                    if listing_data["id"] and listing_data["price"]:
+                        listings.append(listing_data)
+
+            logger.info(f"Found {len(listings)} marketplace listings")
+            return listings
+
+        except requests.exceptions.RequestException as e:
+            raise BGGApiError(f"Failed to fetch marketplace listings: {e}") from e
+        except (KeyError, ValueError) as e:
+            raise BGGApiError(f"Failed to parse marketplace data: {e}") from e
