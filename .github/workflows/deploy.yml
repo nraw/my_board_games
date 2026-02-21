@@ -63,10 +63,10 @@ jobs:
           path: 11ty_site/_data
 
 
-      - name: Setup node 18 📦
+      - name: Setup node 20 📦
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install and Build 🔧
         run: |
