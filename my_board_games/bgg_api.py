@@ -353,6 +353,11 @@ class BGGClient:
                 )
                 expansions.append(expansion)
 
+        # Get mechanics
+        mechanics = []
+        for link in item.findall("link[@type='boardgamemechanic']"):
+            mechanics.append({"id": int(link.get("id")), "name": link.get("value")})
+
         # Build full data dictionary
         data_dict = {
             "id": game_id,
@@ -362,6 +367,7 @@ class BGGClient:
             "maxplayers": max_players,
             "stats": self._parse_stats(item),
             "expansions": [exp.data() for exp in expansions],
+            "mechanics": mechanics,
             "suggested_players": suggested_players,
             "playingtime": playingtime,
         }
@@ -489,6 +495,8 @@ class BGGClient:
         # Map common parameters
         if kwargs.get("own"):
             params["own"] = 1
+        if kwargs.get("rated"):
+            params["rated"] = 1
         if kwargs.get("wishlist"):
             params["wishlist"] = 1
         if kwargs.get("preordered"):
@@ -522,6 +530,7 @@ class BGGClient:
             max_players = 1
             rating = None
 
+            personal_rating = None
             if stats_elem is not None:
                 minplayers_elem = stats_elem.get("minplayers")
                 maxplayers_elem = stats_elem.get("maxplayers")
@@ -545,16 +554,29 @@ class BGGClient:
                     except (ValueError, TypeError):
                         pass
 
-            # Parse wishlist priority
+                # Personal rating is the value attribute on the <rating> element
+                personal_rating_elem = stats_elem.find(".//rating")
+                if personal_rating_elem is not None:
+                    pr_value = personal_rating_elem.get("value")
+                    if pr_value and pr_value != "N/A":
+                        try:
+                            personal_rating = float(pr_value)
+                        except (ValueError, TypeError):
+                            pass
+
+            # Parse status flags
             status = item_elem.find("status")
+            own_status = False
             wishlist_priority = None
-            if status is not None and kwargs.get("wishlist"):
-                priority = status.get("wishlistpriority")
-                if priority:
-                    try:
-                        wishlist_priority = int(priority)
-                    except (ValueError, TypeError):
-                        pass
+            if status is not None:
+                own_status = status.get("own") == "1"
+                if kwargs.get("wishlist"):
+                    priority = status.get("wishlistpriority")
+                    if priority:
+                        try:
+                            wishlist_priority = int(priority)
+                        except (ValueError, TypeError):
+                            pass
             numplays_elem = item_elem.find("numplays")
             numplays = 0
             if numplays_elem is not None:
@@ -574,6 +596,8 @@ class BGGClient:
                 "minplayers": min_players,
                 "maxplayers": max_players,
                 "rating": rating,
+                "personal_rating": personal_rating,
+                "own_status": own_status,
                 "wishlistpriority": wishlist_priority,
                 "numplays": numplays,
                 "invlocation": invlocation,
