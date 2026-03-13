@@ -8,20 +8,35 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; overflow: hidden; }
-    #graph { width: 100vw; height: 100vh; }
+
+    canvas { display: block; }
+
     #controls {
       position: fixed; top: 16px; left: 16px; background: #1e293b; border: 1px solid #334155;
       border-radius: 8px; padding: 12px 16px; font-size: 13px; z-index: 10;
+      max-height: calc(100vh - 32px); overflow-y: auto; width: 260px;
     }
     #controls h2 { font-size: 16px; margin-bottom: 8px; }
     #controls label { display: block; margin: 4px 0; cursor: pointer; }
+    #controls select, #controls input[type=text] {
+      width: 100%; padding: 4px 8px; background: #0f172a; border: 1px solid #475569;
+      border-radius: 4px; color: #e2e8f0; font-size: 12px; margin-top: 2px;
+    }
     #controls input[type=range] { width: 140px; vertical-align: middle; }
-    .legend { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: #94a3b8; }
-    .legend span { display: flex; align-items: center; gap: 4px; }
-    .legend .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-    #search { width: 100%; padding: 4px 8px; margin-bottom: 8px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: #e2e8f0; font-size: 13px; }
+    .control-group { margin: 8px 0; }
+    .control-group-title { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .checkbox-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+    .checkbox-group label { display: flex; align-items: center; gap: 4px; font-size: 12px; }
+    .checkbox-group input[type=checkbox] { accent-color: #6366f1; }
+
+    #legend { display: flex; gap: 12px; margin-top: 8px; font-size: 11px; color: #94a3b8; flex-wrap: wrap; }
+    #legend span { display: flex; align-items: center; gap: 4px; }
+    #legend .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+    #color-gradient { width: 100%; height: 10px; border-radius: 4px; margin-top: 4px; }
+    #color-range-labels { display: flex; justify-content: space-between; font-size: 10px; color: #64748b; }
+
     #sidebar {
-      position: fixed; top: 0; right: 0; width: 320px; height: 100vh; background: #1e293b;
+      position: fixed; top: 0; right: 0; width: 340px; height: 100vh; background: #1e293b;
       border-left: 1px solid #334155; padding: 20px; z-index: 20; overflow-y: auto;
       transform: translateX(100%); transition: transform 0.2s ease;
     }
@@ -50,468 +65,671 @@
     }
     .rating-badge.personal { background: #312e81; color: #a5b4fc; }
     .rating-badge.bgg { background: #1e3a2f; color: #6ee7b7; }
-    .rating-badge.owned-badge { background: #1e3a5f; color: #93c5fd; font-size: 10px; }
-    .rating-badge.rated-only-badge { background: #3b1f2b; color: #f9a8d4; font-size: 10px; }
+    .status-badge {
+      display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px;
+      font-weight: 600; margin-left: 4px; vertical-align: middle;
+    }
+    .status-badge.owned { background: #1e3a5f; color: #93c5fd; }
+    .status-badge.wishlist { background: #3b2f1e; color: #fcd34d; }
+    .status-badge.rated { background: #3b1f2b; color: #f9a8d4; }
     #sidebar .ratings-row { display: flex; gap: 8px; margin: 8px 0 12px; align-items: center; font-size: 13px; }
     #sidebar .ratings-row .rating-label { color: #64748b; font-size: 11px; }
     #sidebar .ratings-row .rating-value { font-size: 18px; font-weight: 600; }
     #sidebar .ratings-row .rating-value.personal { color: #a5b4fc; }
     #sidebar .ratings-row .rating-value.bgg { color: #6ee7b7; }
+    #sidebar .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
+    #sidebar .stat-item { background: #0f172a; border-radius: 4px; padding: 6px 8px; }
+    #sidebar .stat-label { font-size: 10px; color: #64748b; text-transform: uppercase; }
+    #sidebar .stat-value { font-size: 14px; font-weight: 600; color: #e2e8f0; }
   </style>
 </head>
 <body>
   <div id="controls">
     <h2>Game Mechanics Graph</h2>
     <input type="text" id="search" placeholder="Search games or mechanics...">
-    <label>Min games per mechanic: <input type="range" id="minLinks" min="1" max="20" value="1"> <span id="minLinksVal">1</span></label>
-    <label>Max games per mechanic: <input type="range" id="maxLinks" min="1" max="20" value="20"> <span id="maxLinksVal">20</span></label>
-    <label>Min mechanics per game: <input type="range" id="minMechs" min="1" max="20" value="1"> <span id="minMechsVal">1</span></label>
-    <label>Max mechanics per game: <input type="range" id="maxMechs" min="1" max="20" value="20"> <span id="maxMechsVal">20</span></label>
-    <label style="margin-top:6px">Color games by:
-      <select id="colorMode" style="background:#0f172a;border:1px solid #475569;border-radius:4px;color:#e2e8f0;font-size:12px;padding:2px 4px;">
-        <option value="default">Type</option>
-        <option value="personal">Personal Rating</option>
-        <option value="bgg">BGG Rating</option>
-      </select>
-    </label>
-    <div class="legend" id="legendDefault">
-      <span><span class="dot" style="background:#3b82f6"></span> Game</span>
-      <span><span class="dot" style="background:#f59e0b"></span> Mechanic</span>
+
+    <div class="control-group">
+      <div class="control-group-title">Show</div>
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="showOwned" checked> Owned</label>
+        <label><input type="checkbox" id="showWishlist" checked> Wishlist</label>
+        <label><input type="checkbox" id="showRated" checked> Rated</label>
+      </div>
     </div>
-    <div class="legend" id="legendRating" style="display:none">
-      <span><span class="dot" style="background:#ef4444"></span> Low</span>
-      <span><span class="dot" style="background:#eab308"></span> Mid</span>
-      <span><span class="dot" style="background:#22c55e"></span> High</span>
-      <span><span class="dot" style="background:#64748b"></span> Unrated</span>
-      <span><span class="dot" style="background:#f59e0b"></span> Mechanic</span>
+
+    <div class="control-group">
+      <div class="control-group-title">Color by</div>
+      <select id="colorBy">
+        <option value="type">Type (Game / Mechanic)</option>
+        <option value="personal_rating">Personal Rating</option>
+        <option value="bgg_rating">BGG Rating</option>
+        <option value="weight">Weight</option>
+        <option value="playingtime">Playing Time</option>
+        <option value="numplays">Number of Plays</option>
+        <option value="minplayers">Min Players</option>
+        <option value="maxplayers">Max Players</option>
+      </select>
+      <div id="legend"></div>
+      <canvas id="color-gradient" height="10"></canvas>
+      <div id="color-range-labels"></div>
+    </div>
+
+    <div class="control-group">
+      <div class="control-group-title">Size by</div>
+      <select id="sizeBy">
+        <option value="type">Type (default)</option>
+        <option value="personal_rating">Personal Rating</option>
+        <option value="bgg_rating">BGG Rating</option>
+        <option value="weight">Weight</option>
+        <option value="playingtime">Playing Time</option>
+        <option value="numplays">Number of Plays</option>
+        <option value="minplayers">Min Players</option>
+        <option value="maxplayers">Max Players</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <div class="control-group-title">X Axis</div>
+      <select id="xAxis">
+        <option value="force">Force (default)</option>
+        <option value="personal_rating">Personal Rating</option>
+        <option value="bgg_rating">BGG Rating</option>
+        <option value="weight">Weight</option>
+        <option value="playingtime">Playing Time</option>
+        <option value="numplays">Number of Plays</option>
+        <option value="minplayers">Min Players</option>
+        <option value="maxplayers">Max Players</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <div class="control-group-title">Y Axis</div>
+      <select id="yAxis">
+        <option value="force">Force (default)</option>
+        <option value="personal_rating">Personal Rating</option>
+        <option value="bgg_rating">BGG Rating</option>
+        <option value="weight">Weight</option>
+        <option value="playingtime">Playing Time</option>
+        <option value="numplays">Number of Plays</option>
+        <option value="minplayers">Min Players</option>
+        <option value="maxplayers">Max Players</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <div class="control-group-title">Filters</div>
+      <label>Min games/mechanic: <input type="range" id="minLinks" min="1" max="20" value="1"> <span id="minLinksVal">1</span></label>
+      <label>Max games/mechanic: <input type="range" id="maxLinks" min="1" max="20" value="20"> <span id="maxLinksVal">20</span></label>
+      <label>Min mechanics/game: <input type="range" id="minMechs" min="1" max="20" value="1"> <span id="minMechsVal">1</span></label>
+      <label>Max mechanics/game: <input type="range" id="maxMechs" min="1" max="20" value="20"> <span id="maxMechsVal">20</span></label>
     </div>
   </div>
-  <div id="graph"></div>
+
   <div id="sidebar">
     <button class="close-btn" id="sidebarClose">&times;</button>
     <div id="sidebarContent"></div>
   </div>
 
   <script>
-    fetch("data/mechanics.json")
-      .then(r => r.json())
-      .then(data => render(data));
+    fetch("data/mechanics.json").then(r => r.json()).then(render);
+
+    const PROPS = {
+      personal_rating: { label: "Personal Rating", domain: [1, 10] },
+      bgg_rating:      { label: "BGG Rating",      domain: [1, 10] },
+      weight:          { label: "Weight",           domain: [1, 5]  },
+      playingtime:     { label: "Playing Time",     domain: [0, 240] },
+      numplays:        { label: "Num Plays",        domain: [0, 50] },
+      minplayers:      { label: "Min Players",      domain: [1, 6]  },
+      maxplayers:      { label: "Max Players",      domain: [1, 12] },
+    };
+    const GAME_COLOR = "#3b82f6", MECH_COLOR = "#f59e0b";
+    const BG = "#0f172a";
 
     function render(data) {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+      const W = window.innerWidth, H = window.innerHeight, MARGIN = 80;
+      const dpr = window.devicePixelRatio || 1;
 
-      const nodes = [];
-      const links = [];
-      const gameMap = new Map();
-      const mechMap = new Map();
+      // ===== Canvas setup =====
+      const canvas = document.createElement("canvas");
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      canvas.style.width = W + "px"; canvas.style.height = H + "px";
+      document.body.appendChild(canvas);
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+
+      // ===== Build graph =====
+      const nodes = [], links = [];
+      const nodeById = new Map();
+      const adj = new Map();       // id -> Set<id>
+      const mechByName = new Map();
 
       data.games.forEach(g => {
-        const node = {
-          id: `game-${g.id}`, bggId: g.id, name: g.name, type: "game",
+        const n = {
+          id: `g${g.id}`, bggId: g.id, name: g.name, type: "game",
           thumbnail: g.thumbnail, mechanics: g.mechanics,
-          bgg_rating: g.bgg_rating, personal_rating: g.personal_rating, owned: g.owned
+          bgg_rating: g.bgg_rating, personal_rating: g.personal_rating,
+          status: g.status || (g.owned ? "owned" : "rated"),
+          weight: g.weight, playingtime: g.playingtime,
+          minplayers: g.minplayers, maxplayers: g.maxplayers,
+          numplays: g.numplays || 0,
+          visible: true,
         };
-        nodes.push(node);
-        gameMap.set(node.id, node);
+        nodes.push(n);
+        nodeById.set(n.id, n);
+        adj.set(n.id, new Set());
       });
 
       data.mechanics.forEach(m => {
-        const node = { id: `mech-${m.id}`, bggId: m.id, name: m.name, type: "mechanic", games: [] };
-        nodes.push(node);
-        mechMap.set(m.name, node);
+        const n = {
+          id: `m${m.id}`, bggId: m.id, name: m.name, type: "mechanic",
+          games: [], count: 0, visible: true,
+        };
+        nodes.push(n);
+        nodeById.set(n.id, n);
+        mechByName.set(m.name, n);
+        adj.set(n.id, new Set());
       });
 
       data.games.forEach(g => {
-        g.mechanics.forEach(mechName => {
-          const mechNode = mechMap.get(mechName);
-          if (mechNode) {
-            links.push({ source: `game-${g.id}`, target: mechNode.id });
-            mechNode.games.push(g.name);
-          }
+        const gId = `g${g.id}`;
+        g.mechanics.forEach(mName => {
+          const mn = mechByName.get(mName);
+          if (!mn) return;
+          links.push({ source: gId, target: mn.id });
+          mn.games.push(g.name); mn.count++;
+          adj.get(gId).add(mn.id);
+          adj.get(mn.id).add(gId);
         });
       });
 
-      // Scale mechanic nodes by how many games use them
-      mechMap.forEach(m => { m.count = m.games.length; });
-
-      const svg = d3.select("#graph").append("svg")
-        .attr("width", width).attr("height", height);
-
-      const g = svg.append("g");
-
-      svg.call(d3.zoom().scaleExtent([0.1, 8]).on("zoom", e => g.attr("transform", e.transform)));
-
-      const simulation = d3.forceSimulation(nodes)
-        .force("link", d3.forceLink(links).id(d => d.id).distance(80))
-        .force("charge", d3.forceManyBody().strength(-120))
-        .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("collision", d3.forceCollide().radius(d => d.type === "game" ? 12 : 8 + (d.count || 1)));
-
-      const link = g.append("g")
-        .selectAll("line")
-        .data(links)
-        .join("line")
-        .attr("stroke", "#334155")
-        .attr("stroke-width", 0.8);
-
-      let isDragging = false;
-
-      const node = g.append("g")
-        .selectAll("circle")
-        .data(nodes)
-        .join("circle")
-        .attr("r", d => d.type === "game" ? 8 : 4 + Math.sqrt(d.count || 1) * 2)
-        .attr("fill", d => d.type === "game" ? "#3b82f6" : "#f59e0b")
-        .attr("stroke", d => d.type === "game" ? "#60a5fa" : "#fbbf24")
-        .attr("stroke-width", 1)
-        .attr("cursor", "pointer")
-        .call(d3.drag()
-          .on("start", (e, d) => { isDragging = true; if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-          .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
-          .on("end", (e, d) => { isDragging = false; if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; })
-        );
-
-      const label = g.append("g")
-        .selectAll("text")
-        .data(nodes)
-        .join("text")
-        .text(d => d.name)
-        .attr("font-size", d => d.type === "game" ? 9 : 7)
-        .attr("fill", d => d.type === "game" ? "#93c5fd" : "#fcd34d")
-        .attr("dx", d => (d.type === "game" ? 10 : 6 + Math.sqrt(d.count || 1) * 2))
-        .attr("dy", 3)
-        .attr("pointer-events", "none");
-
-      // Rating color scale: red (1) -> yellow (5) -> green (10)
-      const ratingColor = d3.scaleLinear()
-        .domain([1, 5, 10])
-        .range(["#ef4444", "#eab308", "#22c55e"])
-        .clamp(true);
-
-      function ratingBadges(d) {
-        let html = "";
-        if (d.personal_rating != null) html += `<span class="rating-badge personal">${d.personal_rating}</span>`;
-        if (d.bgg_rating != null) html += `<span class="rating-badge bgg">${d.bgg_rating}</span>`;
-        return html;
-      }
-
-      function highlightNode(e, d) {
-        if (isDragging) return;
-
-        const connected = new Set();
-        links.forEach(l => {
-          const src = typeof l.source === "object" ? l.source.id : l.source;
-          const tgt = typeof l.target === "object" ? l.target.id : l.target;
-          if (src === d.id) connected.add(tgt);
-          if (tgt === d.id) connected.add(src);
-        });
-        connected.add(d.id);
-
-        node.attr("opacity", n => connected.has(n.id) ? 1 : 0.1);
-        link.attr("opacity", l => {
-          const src = typeof l.source === "object" ? l.source.id : l.source;
-          const tgt = typeof l.target === "object" ? l.target.id : l.target;
-          return src === d.id || tgt === d.id ? 0.8 : 0.05;
-        });
-        label.attr("opacity", n => connected.has(n.id) ? 1 : 0.1);
-      }
-
-      function unhighlightNode() {
-        if (isDragging) return;
-        node.attr("opacity", 1);
-        link.attr("opacity", 1);
-        label.attr("opacity", 1);
-      }
-
-      node.on("mouseover", highlightNode).on("mouseout", unhighlightNode);
-
-      // Precompute similarity lookups
       const gameNodes = nodes.filter(n => n.type === "game");
       const mechNodes = nodes.filter(n => n.type === "mechanic");
 
-      // For games: sets of mechanic names
-      const gameMechSets = new Map();
-      gameNodes.forEach(gn => gameMechSets.set(gn.id, new Set(gn.mechanics)));
+      // ===== Resolved values with neighbor averaging =====
+      let resolvedCache = new Map();
 
-      // For mechanics: sets of game names
-      const mechGameSets = new Map();
-      mechNodes.forEach(mn => mechGameSets.set(mn.id, new Set(mn.games)));
-
-      function similarGames(d, topN = 10) {
-        const myMechs = gameMechSets.get(d.id);
-        if (!myMechs || myMechs.size === 0) return [];
-        const scores = [];
-        gameNodes.forEach(other => {
-          if (other.id === d.id) return;
-          const otherMechs = gameMechSets.get(other.id);
-          const shared = [...myMechs].filter(m => otherMechs.has(m));
-          if (shared.length > 0) {
-            const union = new Set([...myMechs, ...otherMechs]).size;
-            scores.push({ node: other, shared: shared.length, total: union, names: shared });
+      function getResolved(node, prop) {
+        const key = node.id + "|" + prop;
+        if (resolvedCache.has(key)) return resolvedCache.get(key);
+        let val = node[prop];
+        if (val != null && val !== 0) { resolvedCache.set(key, val); return val; }
+        const neighbors = adj.get(node.id);
+        const vals = [];
+        if (node.type === "mechanic") {
+          for (const nid of neighbors) {
+            const gn = nodeById.get(nid);
+            if (gn && gn[prop] != null && gn[prop] !== 0) vals.push(gn[prop]);
           }
-        });
-        scores.sort((a, b) => b.shared - a.shared || a.total - b.total);
-        return scores.slice(0, topN);
+        } else {
+          for (const mechId of neighbors) {
+            for (const sibId of adj.get(mechId)) {
+              if (sibId === node.id) continue;
+              const sib = nodeById.get(sibId);
+              if (sib && sib[prop] != null && sib[prop] !== 0) vals.push(sib[prop]);
+            }
+          }
+        }
+        val = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+        resolvedCache.set(key, val);
+        return val;
       }
 
-      function similarMechanics(d, topN = 10) {
-        const myGames = mechGameSets.get(d.id);
-        if (!myGames || myGames.size === 0) return [];
-        const scores = [];
-        mechNodes.forEach(other => {
-          if (other.id === d.id) return;
-          const otherGames = mechGameSets.get(other.id);
-          const shared = [...myGames].filter(gn => otherGames.has(gn));
-          if (shared.length > 0) {
-            const union = new Set([...myGames, ...otherGames]).size;
-            scores.push({ node: other, shared: shared.length, total: union, names: shared });
-          }
-        });
-        scores.sort((a, b) => b.shared - a.shared || a.total - b.total);
-        return scores.slice(0, topN);
+      // ===== Visual mappers =====
+      function getColor(n) {
+        const mode = $("colorBy").value;
+        if (mode === "type") return n.type === "game" ? GAME_COLOR : MECH_COLOR;
+        const v = getResolved(n, mode);
+        if (v == null) return "#475569";
+        const info = PROPS[mode];
+        return d3.interpolateViridis(clamp01((v - info.domain[0]) / (info.domain[1] - info.domain[0])));
       }
 
-      function similarityBar(shared, max) {
-        const pct = Math.round((shared / max) * 100);
+      function getStroke(n) {
+        const mode = $("colorBy").value;
+        if (mode === "type") return n.type === "game" ? "#60a5fa" : "#fbbf24";
+        const c = d3.color(getColor(n));
+        return c ? c.brighter(0.5).toString() : "#94a3b8";
+      }
+
+      function getSize(n) {
+        const mode = $("sizeBy").value;
+        if (mode === "type") return n.type === "game" ? 8 : 4 + Math.sqrt(n.count || 1) * 2;
+        const v = getResolved(n, mode);
+        if (v == null) return n.type === "game" ? 6 : 4;
+        const info = PROPS[mode];
+        return 4 + clamp01((v - info.domain[0]) / (info.domain[1] - info.domain[0])) * 14;
+      }
+
+      function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+      function $(id) { return document.getElementById(id); }
+
+      // ===== Force simulation =====
+      const sim = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d => d.id).distance(80))
+        .force("charge", d3.forceManyBody().strength(-120))
+        .force("center", d3.forceCenter(W / 2, H / 2))
+        .force("collision", d3.forceCollide().radius(d => getSize(d) + 2))
+        .on("tick", draw);
+
+      // ===== Transform state (pan/zoom) =====
+      let tx = 0, ty = 0, tk = 1;
+
+      d3.select(canvas).call(
+        d3.zoom().scaleExtent([0.1, 8]).on("zoom", e => {
+          tx = e.transform.x; ty = e.transform.y; tk = e.transform.k;
+          draw();
+        })
+      );
+
+      // ===== Highlight state =====
+      let highlightId = null;  // id of hovered node
+      let highlightSet = null; // Set of ids to show bright
+
+      // ===== Search state =====
+      let searchSet = null; // null = no search active
+
+      // ===== Draw =====
+      function draw() {
+        ctx.save();
+        ctx.clearRect(0, 0, W, H);
+        ctx.translate(tx, ty);
+        ctx.scale(tk, tk);
+
+        const dimming = highlightId != null || searchSet != null;
+
+        // Draw links
+        for (const l of links) {
+          const s = l.source, t = l.target;
+          if (!s.visible || !t.visible) continue;
+          let alpha = 0.4;
+          if (dimming) {
+            if (highlightId != null) {
+              alpha = (s.id === highlightId || t.id === highlightId) ? 0.7 : 0.03;
+            } else if (searchSet != null) {
+              alpha = (searchSet.has(s.id) || searchSet.has(t.id)) ? 0.7 : 0.02;
+            }
+          }
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y);
+          ctx.lineTo(t.x, t.y);
+          ctx.strokeStyle = `rgba(51,65,85,${alpha / 0.4})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+
+        // Draw nodes + labels
+        const labelSize = 9 / tk; // keep labels readable at any zoom
+        const mechLabelSize = 7 / tk;
+
+        for (const n of nodes) {
+          if (!n.visible) continue;
+
+          let alpha = 1;
+          if (dimming) {
+            if (highlightId != null) {
+              alpha = highlightSet.has(n.id) ? 1 : 0.08;
+            } else if (searchSet != null) {
+              alpha = searchSet.has(n.id) ? 1 : 0.05;
+            }
+          }
+
+          ctx.globalAlpha = alpha;
+          const r = getSize(n);
+          const fill = getColor(n);
+          const stroke = getStroke(n);
+
+          if (n.type === "game") {
+            // Circle
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+            ctx.fillStyle = fill;
+            ctx.fill();
+            ctx.strokeStyle = stroke;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          } else {
+            // Hexagon
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+              const angle = Math.PI / 3 * i - Math.PI / 6;
+              const hx = n.x + Math.cos(angle) * r;
+              const hy = n.y + Math.sin(angle) * r;
+              i === 0 ? ctx.moveTo(hx, hy) : ctx.lineTo(hx, hy);
+            }
+            ctx.closePath();
+            ctx.fillStyle = fill;
+            ctx.fill();
+            ctx.strokeStyle = stroke;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+
+          // Label
+          ctx.fillStyle = n.type === "game" ? "#93c5fd" : "#fcd34d";
+          ctx.font = `${n.type === "game" ? labelSize : mechLabelSize}px system-ui, sans-serif`;
+          ctx.textBaseline = "middle";
+          ctx.fillText(n.name, n.x + r + 4, n.y);
+        }
+
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+
+      // ===== Hit detection via quadtree =====
+      function findNode(mx, my) {
+        // Convert screen coords to graph coords
+        const gx = (mx - tx) / tk;
+        const gy = (my - ty) / tk;
+        let closest = null, closestDist = Infinity;
+        for (const n of nodes) {
+          if (!n.visible) continue;
+          const dx = n.x - gx, dy = n.y - gy;
+          const dist = dx * dx + dy * dy;
+          const r = getSize(n) + 4; // slight padding for easier hit
+          if (dist < r * r && dist < closestDist) {
+            closest = n; closestDist = dist;
+          }
+        }
+        return closest;
+      }
+
+      // ===== Mouse interaction =====
+      let dragNode = null, isDragging = false, downX = 0, downY = 0;
+
+      canvas.addEventListener("mousemove", e => {
+        if (dragNode) {
+          // Dragging a node
+          isDragging = true;
+          dragNode.fx = (e.clientX - tx) / tk;
+          dragNode.fy = (e.clientY - ty) / tk;
+          sim.alpha(0.3).restart();
+          return;
+        }
+        // Hover highlight
+        const hit = findNode(e.clientX, e.clientY);
+        if (hit) {
+          highlightId = hit.id;
+          highlightSet = new Set([hit.id, ...adj.get(hit.id)]);
+          canvas.style.cursor = "pointer";
+        } else {
+          highlightId = null;
+          highlightSet = null;
+          canvas.style.cursor = "default";
+        }
+        draw();
+      });
+
+      canvas.addEventListener("mousedown", e => {
+        const hit = findNode(e.clientX, e.clientY);
+        if (hit) {
+          downX = e.clientX; downY = e.clientY;
+          dragNode = hit;
+          isDragging = false;
+          hit.fx = hit.x; hit.fy = hit.y;
+          sim.alphaTarget(0.3).restart();
+          // Prevent zoom from starting when we're dragging a node
+          e.stopPropagation();
+        }
+      });
+
+      canvas.addEventListener("mouseup", e => {
+        if (dragNode) {
+          const dx = e.clientX - downX, dy = e.clientY - downY;
+          const wasDrag = dx * dx + dy * dy > 16;
+
+          if (!wasDrag) {
+            // It was a click, not a drag — open sidebar
+            openSidebar(dragNode);
+          }
+
+          dragNode.fx = null; dragNode.fy = null;
+          dragNode = null; isDragging = false;
+          sim.alphaTarget(0);
+        } else {
+          // Clicked empty space — close sidebar
+          $("sidebar").classList.remove("open");
+        }
+      });
+
+      canvas.addEventListener("mouseleave", () => {
+        highlightId = null; highlightSet = null;
+        draw();
+      });
+
+      // Re-dispatch mousedown to zoom behavior when not on a node
+      // (We stopped propagation above when hitting a node, so zoom still works on empty space)
+      // Actually d3.zoom is already bound — we need to let it through for empty space.
+      // The stopPropagation on node-hit mousedown prevents zoom from stealing the drag.
+      // But we bound zoom with d3.select(canvas).call(zoom) which uses addEventListener,
+      // and stopPropagation prevents it. That's correct for node drags.
+      // For empty space mousedowns, we don't call stopPropagation so zoom works.
+
+      $("sidebarClose").addEventListener("click", () => $("sidebar").classList.remove("open"));
+
+      // ===== Sidebar =====
+      function ratingBadges(d) {
+        let h = "";
+        if (d.personal_rating != null) h += `<span class="rating-badge personal">${d.personal_rating}</span>`;
+        if (d.bgg_rating != null) h += `<span class="rating-badge bgg">${d.bgg_rating}</span>`;
+        return h;
+      }
+      function statusBadge(s) {
+        return `<span class="status-badge ${s}">${{owned:"Owned",wishlist:"Wishlist",rated:"Rated only"}[s]||s}</span>`;
+      }
+      function simBar(shared, max) {
+        const pct = Math.round(shared / max * 100);
         return `<div style="display:flex;align-items:center;gap:6px;margin:2px 0">
           <div style="flex:1;height:4px;background:#334155;border-radius:2px;overflow:hidden">
             <div style="width:${pct}%;height:100%;background:#6366f1;border-radius:2px"></div>
-          </div>
-          <span style="font-size:11px;color:#94a3b8;min-width:20px">${shared}</span>
-        </div>`;
+          </div><span style="font-size:11px;color:#94a3b8;min-width:20px">${shared}</span></div>`;
       }
 
-      // Click to open sidebar
-      const sidebar = d3.select("#sidebar");
-      const sidebarContent = d3.select("#sidebarContent");
+      const gameMechSets = new Map();
+      gameNodes.forEach(g => gameMechSets.set(g.id, new Set(g.mechanics)));
+      const mechGameSets = new Map();
+      mechNodes.forEach(m => mechGameSets.set(m.id, new Set(m.games)));
 
-      d3.select("#sidebarClose").on("click", () => sidebar.classed("open", false));
-
-      let ptrX, ptrY;
-      node.on("pointerdown", (e) => { ptrX = e.clientX; ptrY = e.clientY; })
-          .on("pointerup", (e, d) => {
-            const dx = e.clientX - ptrX, dy = e.clientY - ptrY;
-            if (dx * dx + dy * dy < 25) { e.stopPropagation(); openSidebar(d); }
-          });
+      function topSimilar(d, pool, getSets, n = 10) {
+        const mine = getSets.get(d.id);
+        if (!mine || !mine.size) return [];
+        const out = [];
+        for (const other of pool) {
+          if (other.id === d.id) continue;
+          const theirs = getSets.get(other.id);
+          const shared = [...mine].filter(x => theirs.has(x));
+          if (shared.length) out.push({ node: other, shared: shared.length, union: new Set([...mine, ...theirs]).size, names: shared });
+        }
+        out.sort((a, b) => b.shared - a.shared || a.union - b.union);
+        return out.slice(0, n);
+      }
 
       function openSidebar(d) {
-        let html = "";
+        let h = "";
         if (d.type === "game") {
-          const bggUrl = `https://boardgamegeek.com/boardgame/${d.bggId}`;
-          html += `<div class="node-type game">Game ${d.owned ? '<span class="rating-badge owned-badge">Owned</span>' : '<span class="rating-badge rated-only-badge">Rated only</span>'}</div>`;
-          html += `<h3>${d.name}</h3>`;
-          html += `<div class="ratings-row">`;
-          if (d.personal_rating != null) {
-            html += `<div><div class="rating-label">My Rating</div><div class="rating-value personal">${d.personal_rating}</div></div>`;
-          }
-          if (d.bgg_rating != null) {
-            html += `<div><div class="rating-label">BGG Average</div><div class="rating-value bgg">${d.bgg_rating}</div></div>`;
-          }
-          if (d.personal_rating == null && d.bgg_rating == null) {
-            html += `<div style="color:#64748b;font-size:12px">No ratings available</div>`;
-          }
-          html += `</div>`;
-          if (d.thumbnail) html += `<img class="thumb" src="${d.thumbnail}" alt="${d.name}">`;
-          html += `<a class="bgg-link" href="${bggUrl}" target="_blank">View on BoardGameGeek</a>`;
-          html += `<div class="section-title">Mechanics (${d.mechanics.length})</div><ul>`;
+          h += `<div class="node-type game">Game ${statusBadge(d.status)}</div>`;
+          h += `<h3>${d.name}</h3>`;
+          h += `<div class="ratings-row">`;
+          if (d.personal_rating != null) h += `<div><div class="rating-label">My Rating</div><div class="rating-value personal">${d.personal_rating}</div></div>`;
+          if (d.bgg_rating != null) h += `<div><div class="rating-label">BGG Average</div><div class="rating-value bgg">${d.bgg_rating}</div></div>`;
+          if (d.personal_rating == null && d.bgg_rating == null) h += `<div style="color:#64748b;font-size:12px">No ratings</div>`;
+          h += `</div>`;
+          h += `<div class="stats-grid">`;
+          if (d.weight != null) h += `<div class="stat-item"><div class="stat-label">Weight</div><div class="stat-value">${d.weight.toFixed(2)}</div></div>`;
+          if (d.playingtime != null) h += `<div class="stat-item"><div class="stat-label">Play Time</div><div class="stat-value">${d.playingtime} min</div></div>`;
+          if (d.minplayers != null) h += `<div class="stat-item"><div class="stat-label">Players</div><div class="stat-value">${d.minplayers}–${d.maxplayers}</div></div>`;
+          h += `<div class="stat-item"><div class="stat-label">Plays</div><div class="stat-value">${d.numplays}</div></div>`;
+          h += `</div>`;
+          if (d.thumbnail) h += `<img class="thumb" src="${d.thumbnail}" alt="${d.name}">`;
+          h += `<a class="bgg-link" href="https://boardgamegeek.com/boardgame/${d.bggId}" target="_blank">View on BGG</a>`;
+          h += `<div class="section-title">Mechanics (${d.mechanics.length})</div><ul>`;
           d.mechanics.forEach(m => {
-            const mn = mechMap.get(m);
-            if (mn) {
-              const mechUrl = `https://boardgamegeek.com/boardgamemechanic/${mn.bggId}`;
-              html += `<li><a href="${mechUrl}" target="_blank" style="color:#fcd34d;text-decoration:none">${m}</a></li>`;
-            } else {
-              html += `<li>${m}</li>`;
-            }
+            const mn = mechByName.get(m);
+            h += mn
+              ? `<li><a href="https://boardgamegeek.com/boardgamemechanic/${mn.bggId}" target="_blank" style="color:#fcd34d;text-decoration:none">${m}</a></li>`
+              : `<li>${m}</li>`;
           });
-          html += `</ul>`;
-
-          // Similar games
-          const sims = similarGames(d);
-          if (sims.length > 0) {
-            html += `<div class="section-title">Most Similar Games</div><ul>`;
+          h += `</ul>`;
+          const sims = topSimilar(d, gameNodes, gameMechSets);
+          if (sims.length) {
+            h += `<div class="section-title">Most Similar Games</div><ul>`;
             sims.forEach(s => {
-              const gUrl = `https://boardgamegeek.com/boardgame/${s.node.bggId}`;
-              html += `<li><a href="${gUrl}" target="_blank" style="color:#93c5fd;text-decoration:none">${s.node.name}</a>`;
-              html += ratingBadges(s.node);
-              html += similarityBar(s.shared, d.mechanics.length);
-              html += `<span style="font-size:11px;color:#64748b">${s.names.join(", ")}</span></li>`;
+              h += `<li><a href="https://boardgamegeek.com/boardgame/${s.node.bggId}" target="_blank" style="color:#93c5fd;text-decoration:none">${s.node.name}</a>`;
+              h += ratingBadges(s.node) + simBar(s.shared, d.mechanics.length);
+              h += `<span style="font-size:11px;color:#64748b">${s.names.join(", ")}</span></li>`;
             });
-            html += `</ul>`;
+            h += `</ul>`;
           }
         } else {
-          const mechUrl = `https://boardgamegeek.com/boardgamemechanic/${d.bggId}`;
-          html += `<div class="node-type mechanic">Mechanic</div>`;
-          html += `<h3>${d.name}</h3>`;
-          html += `<a class="bgg-link" href="${mechUrl}" target="_blank">View on BoardGameGeek</a>`;
-          // Compute average ratings for this mechanic's games
-          const mechGames = (d.games || []).map(gn => nodes.find(n => n.type === "game" && n.name === gn)).filter(Boolean);
-          const withPersonal = mechGames.filter(g => g.personal_rating != null);
-          const withBgg = mechGames.filter(g => g.bgg_rating != null);
-          const avgPersonal = withPersonal.length > 0 ? (withPersonal.reduce((s, g) => s + g.personal_rating, 0) / withPersonal.length).toFixed(1) : null;
-          const avgBgg = withBgg.length > 0 ? (withBgg.reduce((s, g) => s + g.bgg_rating, 0) / withBgg.length).toFixed(1) : null;
-
-          html += `<div class="ratings-row">`;
-          if (avgPersonal != null) html += `<div><div class="rating-label">Avg My Rating (${withPersonal.length})</div><div class="rating-value personal">${avgPersonal}</div></div>`;
-          if (avgBgg != null) html += `<div><div class="rating-label">Avg BGG (${withBgg.length})</div><div class="rating-value bgg">${avgBgg}</div></div>`;
-          html += `</div>`;
-
-          html += `<div class="section-title">Games with this mechanic (${(d.games || []).length})</div><ul>`;
-          // Sort games by personal rating (rated first, then by rating desc)
-          mechGames.sort((a, b) => {
-            const ar = a.personal_rating != null ? a.personal_rating : -1;
-            const br = b.personal_rating != null ? b.personal_rating : -1;
-            return br - ar;
+          h += `<div class="node-type mechanic">Mechanic</div>`;
+          h += `<h3>${d.name}</h3>`;
+          h += `<a class="bgg-link" href="https://boardgamegeek.com/boardgamemechanic/${d.bggId}" target="_blank">View on BGG</a>`;
+          const mg = (d.games || []).map(gn => nodes.find(n => n.type === "game" && n.name === gn)).filter(Boolean);
+          const wp = mg.filter(g => g.personal_rating != null);
+          const wb = mg.filter(g => g.bgg_rating != null);
+          h += `<div class="ratings-row">`;
+          if (wp.length) h += `<div><div class="rating-label">Avg My Rating (${wp.length})</div><div class="rating-value personal">${(wp.reduce((s,g)=>s+g.personal_rating,0)/wp.length).toFixed(1)}</div></div>`;
+          if (wb.length) h += `<div><div class="rating-label">Avg BGG (${wb.length})</div><div class="rating-value bgg">${(wb.reduce((s,g)=>s+g.bgg_rating,0)/wb.length).toFixed(1)}</div></div>`;
+          h += `</div>`;
+          const gw = mg.filter(g => g.weight), gt = mg.filter(g => g.playingtime);
+          h += `<div class="stats-grid">`;
+          if (gw.length) h += `<div class="stat-item"><div class="stat-label">Avg Weight</div><div class="stat-value">${(gw.reduce((s,g)=>s+g.weight,0)/gw.length).toFixed(2)}</div></div>`;
+          if (gt.length) h += `<div class="stat-item"><div class="stat-label">Avg Time</div><div class="stat-value">${Math.round(gt.reduce((s,g)=>s+g.playingtime,0)/gt.length)} min</div></div>`;
+          h += `<div class="stat-item"><div class="stat-label">Games</div><div class="stat-value">${mg.length}</div></div></div>`;
+          h += `<div class="section-title">Games (${mg.length})</div><ul>`;
+          mg.sort((a, b) => (b.personal_rating ?? -1) - (a.personal_rating ?? -1));
+          mg.forEach(g => {
+            h += `<li><a href="https://boardgamegeek.com/boardgame/${g.bggId}" target="_blank" style="color:#93c5fd;text-decoration:none">${g.name}</a>${ratingBadges(g)}</li>`;
           });
-          mechGames.forEach(gNode => {
-            const gUrl = `https://boardgamegeek.com/boardgame/${gNode.bggId}`;
-            html += `<li><a href="${gUrl}" target="_blank" style="color:#93c5fd;text-decoration:none">${gNode.name}</a>`;
-            html += ratingBadges(gNode);
-            html += `</li>`;
-          });
-          html += `</ul>`;
-
-          // Similar mechanics
-          const sims = similarMechanics(d);
-          if (sims.length > 0) {
-            html += `<div class="section-title">Most Similar Mechanics</div><ul>`;
+          h += `</ul>`;
+          const sims = topSimilar(d, mechNodes, mechGameSets);
+          if (sims.length) {
+            h += `<div class="section-title">Most Similar Mechanics</div><ul>`;
             sims.forEach(s => {
-              const mUrl = `https://boardgamegeek.com/boardgamemechanic/${s.node.bggId}`;
-              html += `<li><a href="${mUrl}" target="_blank" style="color:#fcd34d;text-decoration:none">${s.node.name}</a>`;
-              html += similarityBar(s.shared, (d.games || []).length);
-              html += `<span style="font-size:11px;color:#64748b">${s.names.join(", ")}</span></li>`;
+              h += `<li><a href="https://boardgamegeek.com/boardgamemechanic/${s.node.bggId}" target="_blank" style="color:#fcd34d;text-decoration:none">${s.node.name}</a>`;
+              h += simBar(s.shared, (d.games || []).length);
+              h += `<span style="font-size:11px;color:#64748b">${s.names.join(", ")}</span></li>`;
             });
-            html += `</ul>`;
+            h += `</ul>`;
           }
         }
-        sidebarContent.html(html);
-        sidebar.classed("open", true);
+        $("sidebarContent").innerHTML = h;
+        $("sidebar").classList.add("open");
       }
 
-      // Click on empty space closes sidebar
-      svg.on("click", () => sidebar.classed("open", false));
-
-      simulation.on("tick", () => {
-        link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
-        node.attr("cx", d => d.x).attr("cy", d => d.y);
-        label.attr("x", d => d.x).attr("y", d => d.y);
-      });
-
-      // Helper to get source/target ids from a link
-      function linkIds(l) {
-        return {
-          src: typeof l.source === "object" ? l.source.id : l.source,
-          tgt: typeof l.target === "object" ? l.target.id : l.target,
-        };
-      }
-
-      // Filters: games per mechanic + mechanics per game
-      const maxGamesCount = Math.max(...Array.from(mechMap.values()).map(m => m.count));
-      const maxMechsCount = Math.max(...gameNodes.map(g => g.mechanics.length));
-      const sliderMin = d3.select("#minLinks");
-      const sliderMax = d3.select("#maxLinks");
-      const sliderMinMechs = d3.select("#minMechs");
-      const sliderMaxMechs = d3.select("#maxMechs");
-
-      sliderMin.attr("max", Math.min(maxGamesCount, 30));
-      sliderMax.attr("max", Math.min(maxGamesCount, 30)).attr("value", Math.min(maxGamesCount, 30));
-      d3.select("#maxLinksVal").text(Math.min(maxGamesCount, 30));
-
-      sliderMinMechs.attr("max", Math.min(maxMechsCount, 30));
-      sliderMaxMechs.attr("max", Math.min(maxMechsCount, 30)).attr("value", Math.min(maxMechsCount, 30));
-      d3.select("#maxMechsVal").text(Math.min(maxMechsCount, 30));
+      // ===== Filtering =====
+      const maxGC = Math.max(...mechNodes.map(m => m.count));
+      const maxMC = Math.max(...gameNodes.map(g => g.mechanics.length));
+      $("minLinks").max = Math.min(maxGC, 30);
+      $("maxLinks").max = Math.min(maxGC, 30); $("maxLinks").value = Math.min(maxGC, 30);
+      $("maxLinksVal").textContent = $("maxLinks").value;
+      $("minMechs").max = Math.min(maxMC, 30);
+      $("maxMechs").max = Math.min(maxMC, 30); $("maxMechs").value = Math.min(maxMC, 30);
+      $("maxMechsVal").textContent = $("maxMechs").value;
 
       function applyFilter() {
-        const minGames = +sliderMin.node().value;
-        const maxGames = +sliderMax.node().value;
-        const minMechs = +sliderMinMechs.node().value;
-        const maxMechs = +sliderMaxMechs.node().value;
-        d3.select("#minLinksVal").text(minGames);
-        d3.select("#maxLinksVal").text(maxGames);
-        d3.select("#minMechsVal").text(minMechs);
-        d3.select("#maxMechsVal").text(maxMechs);
+        const minG = +$("minLinks").value, maxG = +$("maxLinks").value;
+        const minM = +$("minMechs").value, maxM = +$("maxMechs").value;
+        $("minLinksVal").textContent = minG; $("maxLinksVal").textContent = maxG;
+        $("minMechsVal").textContent = minM; $("maxMechsVal").textContent = maxM;
+        const showO = $("showOwned").checked, showW = $("showWishlist").checked, showR = $("showRated").checked;
 
-        // Filter mechanics by game count
-        const visibleMechs = new Set();
-        mechMap.forEach(m => { if (m.count >= minGames && m.count <= maxGames) visibleMechs.add(m.id); });
-
-        // Filter games by mechanic count
-        const visibleGames = new Set();
-        gameNodes.forEach(gn => {
-          if (gn.mechanics.length >= minMechs && gn.mechanics.length <= maxMechs) visibleGames.add(gn.id);
-        });
-
-        // A link is visible only if both its game and mechanic pass their respective filters
-        node.attr("display", n => {
-          if (n.type === "game") return visibleGames.has(n.id) ? null : "none";
-          return visibleMechs.has(n.id) ? null : "none";
-        });
-        label.attr("display", n => {
-          if (n.type === "game") return visibleGames.has(n.id) ? null : "none";
-          return visibleMechs.has(n.id) ? null : "none";
-        });
-        link.attr("display", l => {
-          const { src, tgt } = linkIds(l);
-          const gameVisible = visibleGames.has(src) || visibleGames.has(tgt);
-          const mechVisible = visibleMechs.has(tgt) || visibleMechs.has(src);
-          return gameVisible && mechVisible ? null : "none";
-        });
+        for (const n of nodes) {
+          if (n.type === "mechanic") {
+            n.visible = n.count >= minG && n.count <= maxG;
+          } else {
+            const mc = n.mechanics.length;
+            if (mc < minM || mc > maxM) { n.visible = false; continue; }
+            if (n.status === "owned" && !showO) { n.visible = false; continue; }
+            if (n.status === "wishlist" && !showW) { n.visible = false; continue; }
+            if (n.status === "rated" && !showR) { n.visible = false; continue; }
+            n.visible = true;
+          }
+        }
+        draw();
       }
 
-      sliderMin.on("input", applyFilter);
-      sliderMax.on("input", applyFilter);
-      sliderMinMechs.on("input", applyFilter);
-      sliderMaxMechs.on("input", applyFilter);
+      for (const id of ["minLinks","maxLinks","minMechs","maxMechs"]) $(id).addEventListener("input", applyFilter);
+      for (const id of ["showOwned","showWishlist","showRated"]) $(id).addEventListener("change", applyFilter);
 
-      // Search
-      d3.select("#search").on("input", function() {
+      // ===== Search =====
+      $("search").addEventListener("input", function() {
         const q = this.value.toLowerCase();
-        if (!q) {
-          node.attr("opacity", 1);
-          link.attr("opacity", 1);
-          label.attr("opacity", 1);
-          return;
-        }
+        if (!q) { searchSet = null; draw(); return; }
         const matched = new Set();
-        const connected = new Set();
-        nodes.forEach(n => {
+        for (const n of nodes) {
           if (n.name.toLowerCase().includes(q)) {
             matched.add(n.id);
-            links.forEach(l => {
-              const { src, tgt } = linkIds(l);
-              if (src === n.id) connected.add(tgt);
-              if (tgt === n.id) connected.add(src);
-            });
+            for (const nid of adj.get(n.id)) matched.add(nid);
           }
-        });
-        const visible = new Set([...matched, ...connected]);
-        node.attr("opacity", n => visible.has(n.id) ? 1 : 0.05);
-        link.attr("opacity", l => {
-          const { src, tgt } = linkIds(l);
-          return matched.has(src) || matched.has(tgt) ? 0.8 : 0.02;
-        });
-        label.attr("opacity", n => visible.has(n.id) ? 1 : 0.05);
+        }
+        searchSet = matched;
+        draw();
       });
 
-      // Color mode switching
-      d3.select("#colorMode").on("change", function() {
-        const mode = this.value;
-        d3.select("#legendDefault").style("display", mode === "default" ? "flex" : "none");
-        d3.select("#legendRating").style("display", mode !== "default" ? "flex" : "none");
+      // ===== Update visuals =====
+      function updateVisuals() {
+        resolvedCache.clear();
+        sim.force("collision", d3.forceCollide().radius(d => getSize(d) + 2));
+        sim.alpha(0.3).restart();
+        updateLegend();
+      }
 
-        node.attr("fill", d => {
-          if (d.type !== "game") return "#f59e0b";
-          if (mode === "default") return "#3b82f6";
-          const val = mode === "personal" ? d.personal_rating : d.bgg_rating;
-          return val != null ? ratingColor(val) : "#64748b";
-        }).attr("stroke", d => {
-          if (d.type !== "game") return "#fbbf24";
-          if (mode === "default") return "#60a5fa";
-          const val = mode === "personal" ? d.personal_rating : d.bgg_rating;
-          return val != null ? d3.color(ratingColor(val)).brighter(0.5) : "#94a3b8";
-        });
-      });
+      function updateLegend() {
+        const mode = $("colorBy").value;
+        if (mode === "type") {
+          $("legend").innerHTML = `<span><span class="swatch" style="background:${GAME_COLOR}"></span> Game (circle)</span>
+            <span><span class="swatch" style="background:${MECH_COLOR}"></span> Mechanic (hexagon)</span>`;
+          $("color-gradient").style.display = "none";
+          $("color-range-labels").innerHTML = "";
+        } else {
+          const info = PROPS[mode];
+          $("legend").innerHTML = `<span><span class="swatch" style="background:#475569"></span> No data</span>`;
+          const gc = $("color-gradient"); gc.style.display = "block";
+          const gctx = gc.getContext("2d");
+          gc.width = gc.offsetWidth || 228;
+          for (let i = 0; i < gc.width; i++) {
+            gctx.fillStyle = d3.interpolateViridis(i / gc.width);
+            gctx.fillRect(i, 0, 1, 10);
+          }
+          $("color-range-labels").innerHTML = `<span>${info.domain[0]}</span><span>${info.label}</span><span>${info.domain[1]}</span>`;
+        }
+      }
+
+      // ===== Axis pinning =====
+      function updateForces() {
+        resolvedCache.clear();
+        const xMode = $("xAxis").value, yMode = $("yAxis").value;
+        if (xMode === "force") {
+          sim.force("x", null);
+        } else {
+          const info = PROPS[xMode];
+          const vals = nodes.map(n => getResolved(n, xMode)).filter(v => v != null);
+          const ext = d3.extent(vals);
+          const sc = d3.scaleLinear().domain([ext[0] ?? info.domain[0], ext[1] ?? info.domain[1]]).range([MARGIN, W - MARGIN]).clamp(true);
+          sim.force("x", d3.forceX(d => { const v = getResolved(d, xMode); return v != null ? sc(v) : W / 2; }).strength(0.8));
+        }
+        if (yMode === "force") {
+          sim.force("y", null);
+        } else {
+          const info = PROPS[yMode];
+          const vals = nodes.map(n => getResolved(n, yMode)).filter(v => v != null);
+          const ext = d3.extent(vals);
+          const sc = d3.scaleLinear().domain([ext[0] ?? info.domain[0], ext[1] ?? info.domain[1]]).range([H - MARGIN, MARGIN]).clamp(true);
+          sim.force("y", d3.forceY(d => { const v = getResolved(d, yMode); return v != null ? sc(v) : H / 2; }).strength(0.8));
+        }
+        const both = xMode !== "force" && yMode !== "force";
+        sim.force("center", both ? null : d3.forceCenter(W / 2, H / 2));
+        sim.force("charge", d3.forceManyBody().strength(both ? -30 : -120));
+        sim.force("link").distance(both ? 30 : 80);
+        sim.alpha(0.6).restart();
+      }
+
+      $("colorBy").addEventListener("change", updateVisuals);
+      $("sizeBy").addEventListener("change", updateVisuals);
+      $("xAxis").addEventListener("change", updateForces);
+      $("yAxis").addEventListener("change", updateForces);
+
+      updateLegend();
     }
   </script>
 </body>
