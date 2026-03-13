@@ -288,8 +288,14 @@
 
       d3.select("#sidebarClose").on("click", () => sidebar.classed("open", false));
 
-      node.on("click", (e, d) => {
-        e.stopPropagation();
+      let ptrX, ptrY;
+      node.on("pointerdown", (e) => { ptrX = e.clientX; ptrY = e.clientY; })
+          .on("pointerup", (e, d) => {
+            const dx = e.clientX - ptrX, dy = e.clientY - ptrY;
+            if (dx * dx + dy * dy < 25) { e.stopPropagation(); openSidebar(d); }
+          });
+
+      function openSidebar(d) {
         let html = "";
         if (d.type === "game") {
           const bggUrl = `https://boardgamegeek.com/boardgame/${d.bggId}`;
@@ -380,7 +386,7 @@
         }
         sidebarContent.html(html);
         sidebar.classed("open", true);
-      });
+      }
 
       // Click on empty space closes sidebar
       svg.on("click", () => sidebar.classed("open", false));
