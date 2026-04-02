@@ -8,6 +8,8 @@ conf = {
         #  324856,  # The Crew: Mission Deep Sea
     ],
     "mapping": {
+        "Nemesis: Lockdown": "Nemesis",
+        "Nemesis: Retaliation": "Nemesis",
         "The Crew: Mission Deep Sea": "The Crew: The Quest for Planet Nine",
         "Welcome Back to the Dungeon": "Welcome to the Dungeon",
         "Tournament at Camelot": "Tournament at Avalon",
