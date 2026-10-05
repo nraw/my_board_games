@@ -134,9 +134,13 @@ class BGGClient:
                     )
                     return False
             else:
+                # cf-mitigated is set when Cloudflare blocks/challenges the request;
+                # BGG's own errors come back as JSON in the body
+                body_snippet = " ".join(response.text.split())[:200]
                 logger.warning(
-                    f"BGG login failed with status {response.status_code}. "
-                    "Private info will not be available."
+                    f"BGG login failed with status {response.status_code} "
+                    f"(cf-mitigated={response.headers.get('cf-mitigated')}, "
+                    f"body: {body_snippet!r}). Private info will not be available."
                 )
                 return False
 
