@@ -2,6 +2,7 @@
 
 from unittest.mock import MagicMock, patch
 
+import cloudscraper
 import pytest
 from loguru import logger
 
@@ -78,3 +79,8 @@ def test_login_failure_does_not_log_password(client, log_messages):
     client._login_for_private_info()
 
     assert not any("secret" in m for m in log_messages)
+
+
+def test_session_uses_cloudscraper_to_pass_cloudflare(client):
+    # Plain requests sessions get 403'd by Cloudflare on the login endpoint
+    assert isinstance(client.session, cloudscraper.CloudScraper)

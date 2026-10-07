@@ -9,3 +9,4 @@ tqdm==4.64.0
 retry
 xmltodict
 python-dotenv
+cloudscraper

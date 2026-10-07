@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 from urllib.parse import quote
 
+import cloudscraper
 import requests
 from dotenv import load_dotenv
 from loguru import logger
@@ -78,7 +79,8 @@ class BGGClient:
         self.timeout = timeout
         self.retries = retries
         self.retry_delay = retry_delay
-        self.session = requests.Session()
+        # cloudscraper gets past Cloudflare, which 403s plain requests on login
+        self.session = cloudscraper.create_scraper()
 
         # Load environment variables from .env file
         load_dotenv()
